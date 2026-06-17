@@ -3,93 +3,235 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yupri Ando Portfolio</title>
+
+    <title>Yupriando | Portfolio</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
-    <header>
-      <nav>
-        <h2>Yupri Ando</h2>
-        <ul>
-          <li><a href="#about">About</a></li>
-          <li><a href="#skills">Skills</a></li>
-          <li><a href="#projects">Projects</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-      </nav>
-    </header>
+    <div class="bg-gradient"></div>
 
+    <!-- NAVBAR -->
+    <nav>
+      <div class="logo">Yupri</div>
+
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+
+      <button id="themeBtn">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+    </nav>
+
+    <!-- HERO -->
     <section class="hero">
-      <h1>Hi, I'm Yupri Ando</h1>
-      <p>Backend Developer | Mobile Developer | UI/UX Designer</p>
+      <div class="hero-left">
+        <span class="badge">Available for Internship</span>
 
-      <a href="#projects" class="btn"> View Projects </a>
+        <h1>
+          Hi, I'm
+          <span>Yupriando</span>
+        </h1>
+
+        <h2 id="typing"></h2>
+
+        <p>
+          Computer Science student focused on backend engineering, mobile
+          application development, and machine learning research. Passionate
+          about building scalable software and creating meaningful digital
+          experiences.
+        </p>
+
+        <div class="buttons">
+          <a href="#projects" class="primary-btn">View Projects</a>
+
+          <a href="assets/CV/Yupriando_CV.pdf" class="secondary-btn" download>
+            Download CV
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="profile-card">
+          <img src="assets/Profile/profile.jpg" alt="Foto profil Yupriando" />
+        </div>
+      </div>
     </section>
 
-    <section id="about">
+    <!-- ABOUT -->
+    <section id="about" class="section reveal">
       <h2>About Me</h2>
+
       <p>
-        I am an Informatics student passionate about backend development, mobile
-        applications, and software engineering. I enjoy building scalable
-        applications and continuously learning new technologies.
+        I am a Computer Science student with experience in Flutter development,
+        backend engineering, UI/UX design, and machine learning research. I
+        enjoy transforming ideas into real products, solving complex technical
+        challenges, and continuously learning new technologies.
       </p>
+
+      <div class="stats">
+        <div class="card">
+          <h3>8+</h3>
+          <span>Projects</span>
+        </div>
+
+        <div class="card">
+          <h3>2+</h3>
+          <span>Years Learning</span>
+        </div>
+
+        <div class="card">
+          <h3>1+</h3>
+          <span>Research Projects</span>
+        </div>
+      </div>
     </section>
 
-    <section id="skills">
+    <!-- SKILLS -->
+    <section id="skills" class="section reveal">
       <h2>Skills</h2>
 
-      <div class="skills-container">
-        <span>Flutter</span>
-        <span>Dart</span>
-        <span>Node.js</span>
-        <span>NestJS</span>
-        <span>Express.js</span>
-        <span>MySQL</span>
-        <span>Prisma</span>
-        <span>JavaScript</span>
-        <span>HTML</span>
-        <span>CSS</span>
+      <div class="skill-grid">
+        <div class="skill-card">
+          <h3>Frontend</h3>
+          <p>Flutter, HTML, CSS, JavaScript</p>
+        </div>
+
+        <div class="skill-card">
+          <h3>Backend</h3>
+          <p>Node.js, Express, Prisma, MySQL</p>
+        </div>
+
+        <div class="skill-card">
+          <h3>Tools</h3>
+          <p>Git, GitHub, Postman, Figma</p>
+        </div>
+
+        <div class="skill-card">
+          <h3>Research</h3>
+          <p>Python, TensorFlow, Continual Learning, Deep Learning</p>
+        </div>
       </div>
     </section>
 
-    <section id="projects">
-      <h2>Projects</h2>
+    <!-- PROJECTS -->
+    <section id="projects" class="section reveal">
+      <h2>Featured Projects</h2>
 
-      <div class="project-card">
-        <h3>WSpeedrun API Service</h3>
-        <p>
-          Backend API service built with NestJS, Prisma, JWT Authentication, and
-          Swagger documentation.
-        </p>
-      </div>
+      <div class="project-grid">
+        <div class="project-card" onclick="openModal('notenook')">
+          <img src="assets/NoteNook/NoteNook.jpg" alt="NoteNook" />
+          <h3>NoteNook</h3>
+          <p>
+            Productivity platform built with Flutter and Node.js for organizing,
+            managing, and sharing notes efficiently.
+          </p>
+        </div>
 
-      <div class="project-card">
-        <h3>NoteNook</h3>
-        <p>
-          Full-stack mobile note management application with mentor interaction
-          features.
-        </p>
-      </div>
+        <div class="project-card" onclick="openModal('wspeedrun')">
+          <img src="assets/WSpeedRun/WSpeedRun.png" alt="WSpeedRun" />
+          <h3>WSpeedRun</h3>
+          <p>
+            Backend API platform built with NestJS microservices, Prisma ORM,
+            and MySQLn.
+          </p>
+        </div>
 
-      <div class="project-card">
-        <h3>NoiseCore Website</h3>
-        <p>
-          Responsive music merchandise website built using HTML, CSS, and
-          JavaScript.
-        </p>
+        <div class="project-card" onclick="openModal('tkjquizz')">
+          <img src="assets/TKJ Quizz/TKJ Quizz.jpeg" alt="TKJ Quizz" />
+          <h3>TKJ Quizz</h3>
+          <p>
+            Educational quiz game built with Unity to help students learn
+            computer networks and hardware concepts interactively.
+          </p>
+        </div>
+
+        <div class="project-card" onclick="openModal('noisecoreweb')">
+          <img
+            src="assets/NoiseCore - Web/NoiseCore Web.png"
+            alt="NoiseCore Web"
+          />
+          <h3>NoiseCore Website</h3>
+          <p>
+            Responsive e-commerce website for audio products featuring product
+            catalogs, promotions, and membership registration.
+          </p>
+        </div>
       </div>
     </section>
 
-    <section id="contact">
+    <!-- PROJECT MODAL -->
+    <div id="projectModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <div class="carousel">
+          <button id="prevBtn">&#10094;</button>
+          <img id="modalImage" alt="Project Preview" />
+          <button id="nextBtn">&#10095;</button>
+        </div>
+
+        <div id="carouselCounter"></div>
+
+        <h2 id="modalTitle"></h2>
+        <p id="modalDescription"></p>
+
+        <div class="modal-buttons">
+          <a id="githubBtn" target="_blank" class="primary-btn">
+            <i class="fa-brands fa-github"></i>
+            GitHub Repository
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section reveal">
       <h2>Contact</h2>
 
-      <p>Email: your.email@example.com</p>
-      <p>GitHub: github.com/Yupriando</p>
-      <p>LinkedIn: linkedin.com/in/your-profile</p>
+      <p>Let's build something together.</p>
+
+      <div class="contact-links">
+        <a href="https://github.com/yupriando" target="_blank">
+          <i class="fa-brands fa-github"></i>
+          GitHub
+        </a>
+
+        <a href="https://linkedin.com/in/yupriando" target="_blank">
+          <i class="fa-brands fa-linkedin"></i>
+          LinkedIn
+        </a>
+
+        <a href="mailto:yupriandoo@gmail.com">
+          <i class="fa-solid fa-envelope"></i>
+          Email
+        </a>
+
+        <a href="https://instagram.com/yupriandoo" target="_blank">
+          <i class="fa-brands fa-instagram"></i>
+          Instagram
+        </a>
+      </div>
     </section>
 
-    <footer>
-      <p>© 2026 Yupri Ando. All Rights Reserved.</p>
-    </footer>
+    <footer>© 2026 Yupriando. Built with HTML, CSS &amp; JavaScript.</footer>
+
+    <script src="script.js"></script>
   </body>
 </html>
