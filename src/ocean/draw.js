@@ -714,65 +714,206 @@ function dot(c, x, y, r, halo, rgb) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Siluet raksasa di kejauhan                                         */
+/*  Hewan raksasa yang lewat di kejauhan (paus bungkuk & pari manta)   */
+/*  Digambar menghadap ke kanan; warna dibuat pudar seperti di jauh.   */
 /* ------------------------------------------------------------------ */
 export function drawWhale(c, w) {
   const L = w.size;
+  const ph = w.phase;
   c.save();
-  c.translate(w.x, w.y);
+  c.translate(w.x, w.y + Math.sin(ph * 0.5) * L * 0.012);
   c.scale(w.dir, 1);
+  c.rotate(Math.sin(ph * 0.5) * 0.03);
   c.globalAlpha = w.alpha;
-  c.fillStyle = '#031426';
-  // ekor
+
+  // ekor (fluke) mengayun naik-turun
   c.save();
-  c.translate(-L * 0.46, -L * 0.01);
-  c.rotate(Math.sin(w.phase) * 0.18);
+  c.translate(-L * 0.4, -L * 0.004);
+  c.rotate(Math.sin(ph) * 0.22);
+  const fg = c.createLinearGradient(0, -L * 0.1, 0, L * 0.1);
+  fg.addColorStop(0, '#0d2a40');
+  fg.addColorStop(1, '#2a5776');
+  c.fillStyle = fg;
   c.beginPath();
-  c.moveTo(0, 0);
-  c.quadraticCurveTo(-L * 0.06, -L * 0.02, -L * 0.13, -L * 0.09);
-  c.quadraticCurveTo(-L * 0.1, -L * 0.01, -L * 0.07, 0);
-  c.quadraticCurveTo(-L * 0.1, L * 0.01, -L * 0.13, L * 0.09);
-  c.quadraticCurveTo(-L * 0.06, L * 0.02, 0, 0);
+  c.moveTo(L * 0.02, -L * 0.012);
+  c.quadraticCurveTo(-L * 0.05, -L * 0.03, -L * 0.13, -L * 0.1);
+  c.quadraticCurveTo(-L * 0.11, -L * 0.035, -L * 0.085, 0);
+  c.quadraticCurveTo(-L * 0.11, L * 0.035, -L * 0.13, L * 0.1);
+  c.quadraticCurveTo(-L * 0.05, L * 0.03, L * 0.02, L * 0.012);
+  c.closePath();
   c.fill();
   c.restore();
+
+  // sirip dada belakang (sisi jauh, lebih gelap)
+  pectoral(c, L, L * 0.17, L * 0.05, 0.75 + Math.sin(ph * 0.7 + 1) * 0.15, '#0b2236', '#1d4560', 0.85);
+
   // badan
   c.beginPath();
-  c.moveTo(L * 0.5, 0);
-  c.bezierCurveTo(L * 0.45, -L * 0.12, L * 0.05, -L * 0.13, -L * 0.47, -L * 0.02);
-  c.lineTo(-L * 0.47, L * 0.01);
-  c.bezierCurveTo(L * 0, L * 0.1, L * 0.4, L * 0.12, L * 0.5, 0);
+  c.moveTo(L * 0.5, -L * 0.008);
+  c.bezierCurveTo(L * 0.46, -L * 0.075, L * 0.25, -L * 0.118, L * 0.02, -L * 0.113);
+  c.bezierCurveTo(-L * 0.18, -L * 0.108, -L * 0.3, -L * 0.06, -L * 0.41, -L * 0.02);
+  c.lineTo(-L * 0.41, L * 0.012);
+  c.bezierCurveTo(-L * 0.28, L * 0.05, -L * 0.1, L * 0.112, L * 0.12, L * 0.106);
+  c.bezierCurveTo(L * 0.3, L * 0.1, L * 0.45, L * 0.06, L * 0.5, L * 0.012);
+  c.closePath();
+  const bg = c.createLinearGradient(0, -L * 0.12, 0, L * 0.11);
+  bg.addColorStop(0, '#0b2539');
+  bg.addColorStop(0.45, '#1a4562');
+  bg.addColorStop(0.7, '#3d6d8a');
+  bg.addColorStop(1, '#8fb3c7');
+  c.fillStyle = bg;
   c.fill();
-  // sirip panjang (paus bungkuk)
+
+  // detail di dalam badan: lipatan tenggorokan, cahaya di punggung
   c.save();
-  c.translate(L * 0.22, L * 0.06);
-  c.rotate(0.5 + Math.sin(w.phase * 0.7) * 0.15);
-  c.beginPath();
-  c.ellipse(-L * 0.12, 0, L * 0.16, L * 0.025, 0, 0, TAU);
-  c.fill();
+  c.clip();
+  c.strokeStyle = 'rgba(220,240,250,.22)';
+  c.lineWidth = Math.max(1, L * 0.0028);
+  for (let k = 0; k < 7; k++) {
+    const o = k * L * 0.011;
+    c.beginPath();
+    c.moveTo(L * 0.47, L * 0.02 + o * 0.4);
+    c.quadraticCurveTo(L * 0.28, L * 0.05 + o, L * 0.04, L * 0.07 + o);
+    c.stroke();
+  }
+  const lg = c.createLinearGradient(0, -L * 0.12, 0, -L * 0.04);
+  lg.addColorStop(0, 'rgba(160,210,235,.28)');
+  lg.addColorStop(1, 'rgba(160,210,235,0)');
+  c.fillStyle = lg;
+  c.fillRect(-L * 0.5, -L * 0.13, L, L * 0.09);
   c.restore();
+
+  // sirip punggung kecil
+  c.fillStyle = '#0d2a40';
+  c.beginPath();
+  c.moveTo(-L * 0.1, -L * 0.1);
+  c.quadraticCurveTo(-L * 0.15, -L * 0.13, -L * 0.2, -L * 0.125);
+  c.quadraticCurveTo(-L * 0.18, -L * 0.1, -L * 0.17, -L * 0.088);
+  c.closePath();
+  c.fill();
+
+  // benjolan (tuberkel) di kepala
+  c.fillStyle = 'rgba(190,220,235,.35)';
+  for (let k = 0; k < 6; k++) {
+    c.beginPath();
+    c.arc(L * (0.46 - k * 0.035), -L * (0.045 + k * 0.009), L * 0.004, 0, TAU);
+    c.fill();
+  }
+  // mulut & mata
+  c.strokeStyle = 'rgba(5,20,32,.7)';
+  c.lineWidth = Math.max(1, L * 0.003);
+  c.beginPath();
+  c.moveTo(L * 0.495, L * 0.01);
+  c.quadraticCurveTo(L * 0.4, L * 0.035, L * 0.27, L * 0.03);
+  c.stroke();
+  c.fillStyle = 'rgba(200,225,235,.5)';
+  c.beginPath();
+  c.arc(L * 0.255, L * 0.012, L * 0.009, 0, TAU);
+  c.fill();
+  c.fillStyle = '#04121d';
+  c.beginPath();
+  c.arc(L * 0.257, L * 0.012, L * 0.0055, 0, TAU);
+  c.fill();
+
+  // sirip dada depan (panjang, khas paus bungkuk)
+  pectoral(c, L, L * 0.2, L * 0.065, 0.55 + Math.sin(ph * 0.7) * 0.18, '#1d4a68', '#a9c6d6', 1);
+  c.restore();
+}
+
+function pectoral(c, L, x, y, rot, dark, light, len) {
+  c.save();
+  c.translate(x, y);
+  c.rotate(-rot); // sirip menjuntai ke bawah-belakang
+  const g = c.createLinearGradient(0, -L * 0.02, 0, L * 0.02);
+  g.addColorStop(0, dark);
+  g.addColorStop(1, light);
+  c.fillStyle = g;
+  const P = L * 0.3 * len;
+  c.beginPath();
+  c.moveTo(0, -L * 0.018);
+  c.quadraticCurveTo(-P * 0.5, -L * 0.028, -P, -L * 0.006);
+  c.quadraticCurveTo(-P * 1.03, L * 0.004, -P * 0.95, L * 0.01);
+  // tepi bergerigi (benjolan di sirip paus bungkuk)
+  for (let k = 1; k <= 5; k++) {
+    const t = 1 - k / 6;
+    c.quadraticCurveTo(-P * (t + 0.08), L * 0.026, -P * t, L * 0.016);
+  }
+  c.quadraticCurveTo(-P * 0.05, L * 0.02, 0, L * 0.018);
+  c.closePath();
+  c.fill();
   c.restore();
 }
 
 export function drawManta(c, m) {
   const L = m.size;
-  const flap = Math.sin(m.phase) * 0.35;
+  const f = Math.sin(m.phase);
+  const k = 0.72 + 0.28 * f; // bentang sayap saat mengepak
+  const sweep = -f * L * 0.05; // ujung sayap maju-mundur
   c.save();
-  c.translate(m.x, m.y);
+  c.translate(m.x, m.y + Math.sin(m.phase * 0.5) * 3);
   c.scale(m.dir, 1);
   c.globalAlpha = m.alpha;
-  c.fillStyle = '#062a45';
+
+  // ekor
+  c.strokeStyle = '#0b2a42';
+  c.lineWidth = Math.max(1.5, L * 0.012);
+  c.lineCap = 'round';
   c.beginPath();
-  c.moveTo(L * 0.3, 0);
-  c.quadraticCurveTo(L * 0.1, -L * (0.15 + flap), -L * 0.05, -L * (0.45 + flap));
-  c.quadraticCurveTo(-L * 0.12, -L * 0.1, -L * 0.25, 0);
-  c.quadraticCurveTo(-L * 0.12, L * 0.1, -L * 0.05, L * (0.45 - flap));
-  c.quadraticCurveTo(L * 0.1, L * (0.15 - flap), L * 0.3, 0);
-  c.fill();
-  c.strokeStyle = '#062a45';
-  c.lineWidth = 2;
-  c.beginPath();
-  c.moveTo(-L * 0.25, 0);
-  c.lineTo(-L * 0.6, Math.sin(m.phase * 0.7) * 6);
+  c.moveTo(-L * 0.2, 0);
+  c.quadraticCurveTo(-L * 0.4, Math.sin(m.phase * 0.7) * L * 0.03, -L * 0.6, Math.sin(m.phase * 0.7 + 1) * L * 0.04);
   c.stroke();
+
+  // sayap & badan (dilihat dari atas)
+  const wing = (s) => {
+    c.quadraticCurveTo(L * 0.14, s * L * 0.07, -L * 0.02 + sweep, s * L * 0.5 * k);
+    c.quadraticCurveTo(-L * 0.06, s * L * 0.2 * k, -L * 0.21, s * L * 0.05);
+  };
+  c.beginPath();
+  c.moveTo(L * 0.22, -L * 0.035);
+  wing(-1);
+  c.lineTo(-L * 0.23, 0);
+  c.lineTo(-L * 0.21, L * 0.05);
+  c.quadraticCurveTo(-L * 0.06, L * 0.2 * k, -L * 0.02 + sweep, L * 0.5 * k);
+  c.quadraticCurveTo(L * 0.14, L * 0.07, L * 0.22, L * 0.035);
+  c.closePath();
+  const g = c.createRadialGradient(L * 0.02, 0, L * 0.02, 0, 0, L * 0.5);
+  g.addColorStop(0, '#0a2235');
+  g.addColorStop(0.6, '#123a56');
+  g.addColorStop(1, '#2a5a78');
+  c.fillStyle = g;
+  c.fill();
+
+  // bercak putih di bahu (khas pari manta)
+  c.fillStyle = 'rgba(215,235,245,.28)';
+  for (const s of [-1, 1]) {
+    c.beginPath();
+    c.ellipse(L * 0.03, s * L * 0.13 * k, L * 0.07, L * 0.045 * k, s * 0.5, 0, TAU);
+    c.fill();
+  }
+  // garis punggung
+  c.strokeStyle = 'rgba(160,205,230,.18)';
+  c.lineWidth = Math.max(1, L * 0.006);
+  c.beginPath();
+  c.moveTo(L * 0.18, 0);
+  c.lineTo(-L * 0.2, 0);
+  c.stroke();
+
+  // sirip kepala (cephalic) yang melengkung
+  c.fillStyle = '#0d2c45';
+  for (const s of [-1, 1]) {
+    c.beginPath();
+    c.moveTo(L * 0.2, s * L * 0.02);
+    c.quadraticCurveTo(L * 0.3, s * L * 0.03, L * 0.29, s * L * 0.075);
+    c.quadraticCurveTo(L * 0.25, s * L * 0.07, L * 0.2, s * L * 0.055);
+    c.closePath();
+    c.fill();
+  }
+  // mata
+  c.fillStyle = 'rgba(200,225,235,.6)';
+  for (const s of [-1, 1]) {
+    c.beginPath();
+    c.arc(L * 0.17, s * L * 0.05, Math.max(1, L * 0.008), 0, TAU);
+    c.fill();
+  }
   c.restore();
 }

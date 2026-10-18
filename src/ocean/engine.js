@@ -738,7 +738,6 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     for (const j of jellies) if (!j.grabbed) j.y -= sd * 0.45;
     for (const b of bubbles) b.y -= sd * 0.5;
     for (const fd of foods) fd.y -= sd * 0.5;
-    if (giant) giant.y -= sd * 0.15;
     for (const s of snow) {
       s.y -= sd * 0.6;
       if (s.y < 0) s.y += H;
@@ -757,9 +756,10 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
         giant = {
           kind, dir, size,
           x: dir > 0 ? -size * 0.6 : W + size * 0.6,
-          y: rand(H * 0.3, H * 0.7),
+          // posisi tetap di layar (tidak ikut scroll), selalu di bawah permukaan
+          y: rand(Math.max(H * 0.35, surf + size * 0.3), H * 0.72),
           phase: 0,
-          alpha: kind === 'whale' ? 0.45 : 0.35,
+          alpha: kind === 'whale' ? 0.6 : 0.55,
           speed: kind === 'whale' ? 0.45 : 0.8,
         };
       }

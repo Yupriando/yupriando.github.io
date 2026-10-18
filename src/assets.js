@@ -34,6 +34,8 @@ export const assets = {
     tang: { src: 'assets/fish/dori.png', scale: 1.42 },
     angel: { src: 'assets/fish/angel.png', scale: 1.5 },
     shark: { src: 'assets/fish/hiu.png', scale: 1.23 },
+    silver: { src: 'assets/fish/sarden.png', scale: 1.3, name: 'Ikan Sarden' },
+    barracuda: { src: 'assets/fish/barakuda.png', scale: 1.3 },
     eel: { src: 'assets/fish/belut.png', scale: 1.16, name: 'Belut Laut' },
     dumbo: { src: 'assets/fish/dumbo.png', scale: 1.24 },
     // yellow: { src: 'assets/fish/kuning-sheet.png', frames: 4, fps: 8 },
