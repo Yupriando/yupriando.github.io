@@ -1,0 +1,102 @@
+/* ==========================================================
+   KONTAK
+   ========================================================== */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 36px;
+  align-items: start;
+}
+.contact-info p {
+  margin: 0 0 16px;
+}
+.contact-info > p:not(.lead) {
+  color: #c7dceb;
+}
+
+.socials {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+}
+.social {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: border-color 0.25s, background 0.25s;
+}
+.social svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+}
+.social:hover {
+  border-color: rgba(92, 225, 230, 0.5);
+  background: var(--glass-strong);
+}
+
+.contact-form {
+  display: grid;
+  gap: 16px;
+  padding: 26px;
+}
+.form-head {
+  color: var(--muted);
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border);
+}
+.contact-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(0, 10, 25, 0.45);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+  color: rgba(157, 184, 204, 0.55);
+}
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(92, 225, 230, 0.18);
+}
+.contact-form .btn {
+  justify-self: start;
+  border: 0;
+}
+
+@media (max-width: 860px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 400px) {
+  .socials {
+    grid-template-columns: 1fr;
+  }
+  .contact-form {
+    padding: 20px;
+  }
+  .contact-form .btn {
+    justify-self: stretch;
+  }
+}

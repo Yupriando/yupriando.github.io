@@ -1,0 +1,150 @@
+/* ==========================================================
+   PROYEK
+   ========================================================== */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.filter {
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.filter:hover {
+  border-color: rgba(92, 225, 230, 0.5);
+}
+.filter.active {
+  border-color: transparent;
+  color: #03203a;
+  font-weight: 600;
+}
+.filter-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5ce1e6, #3a8dde);
+}
+.filter-label {
+  position: relative;
+  z-index: 1;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(310px, 100%), 1fr));
+  gap: 20px;
+}
+.project-item {
+  display: flex;
+}
+.project {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.project:hover {
+  border-color: rgba(92, 225, 230, 0.4);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), 0 0 30px rgba(92, 225, 230, 0.12);
+}
+
+/* "layar" proyek */
+.project-media {
+  position: relative;
+  height: 170px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.project-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+.project-media .emoji {
+  font-size: 4rem;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
+  transition: transform 0.5s var(--ease);
+}
+.project:hover .emoji {
+  transform: scale(1.15) rotate(-6deg);
+}
+.win-dots {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  display: flex;
+  gap: 5px;
+}
+.win-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+}
+.media-label {
+  position: absolute;
+  bottom: 10px;
+  left: 14px;
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #d8f6ff;
+}
+.m1 {
+  background: radial-gradient(circle at 30% 30%, #ff9a5a55, transparent 60%), linear-gradient(135deg, #0f4c75, #1b998b);
+}
+.m2 {
+  background: radial-gradient(circle at 70% 30%, #ffd16655, transparent 60%), linear-gradient(135deg, #5f0f40, #9a031e);
+}
+.m3 {
+  background: radial-gradient(circle at 30% 70%, #5ce1e655, transparent 60%), linear-gradient(135deg, #03045e, #0077b6);
+}
+.m4 {
+  background: radial-gradient(circle at 70% 70%, #ff7bd555, transparent 60%), linear-gradient(135deg, #2d0b3a, #6a1b5a);
+}
+.m5 {
+  background: radial-gradient(circle at 30% 30%, #39ff8844, transparent 60%), linear-gradient(135deg, #0b3d2e, #1d6b52);
+}
+.m6 {
+  background: radial-gradient(circle at 60% 40%, #5ce1e655, transparent 60%), linear-gradient(135deg, #04142c, #145b88);
+}
+
+.project-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px 22px;
+  flex: 1;
+}
+.project-body h3 {
+  font-size: 1.2rem;
+}
+.project-body p {
+  margin: 0;
+  color: #c7dceb;
+  font-size: 0.93rem;
+}
+.project-links {
+  display: flex;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+.project-links a {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.project-links a:hover {
+  border-color: var(--accent);
+}

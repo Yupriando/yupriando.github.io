@@ -1,0 +1,168 @@
+/* ==========================================================
+   TERUMBU KARANG
+   ========================================================== */
+.reef {
+  --reef-h: clamp(220px, 24vw, 340px);
+  position: relative;
+  z-index: 0; /* di bawah kanvas ikan → ikan berenang di depan karang */
+  height: var(--reef-h);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+.reef svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* terumbu pertama naik ke bawah laut di hero (tepat di bawah kapal) */
+.reef-top {
+  margin-top: calc(var(--reef-h) * -0.84);
+}
+.reef-twilight,
+.reef-midnight {
+  margin-block: calc(-1 * clamp(70px, 9vw, 130px));
+}
+
+.reef-back {
+  opacity: 0.62;
+}
+
+/* ---------- interaksi ---------- */
+.reef-item {
+  pointer-events: auto;
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: filter 0.3s;
+}
+.reef-item:hover {
+  filter: brightness(1.25) saturate(1.15);
+}
+.reef-item.poked {
+  animation: coral-poke 0.75s ease;
+}
+@keyframes coral-poke {
+  20% {
+    transform: rotate(-7deg) scale(1.06);
+  }
+  45% {
+    transform: rotate(6deg) scale(1.03);
+  }
+  70% {
+    transform: rotate(-3deg);
+  }
+}
+
+/* ---------- goyangan arus laut ---------- */
+.kelp-sway,
+.anemone-sway,
+.sway-slow {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.kelp-sway {
+  animation: reef-sway 6s ease-in-out infinite alternate;
+}
+.anemone-sway {
+  animation: anemone 3.2s ease-in-out infinite alternate;
+}
+.sway-slow {
+  animation: reef-sway-small 7s ease-in-out infinite alternate;
+}
+.reef-front > g:nth-child(3n) .kelp-sway,
+.reef-back > g:nth-child(3n) .kelp-sway,
+.reef-front > g:nth-child(3n) .anemone-sway,
+.reef-front > g:nth-child(3n) .sway-slow {
+  animation-delay: -2.2s;
+}
+.reef-front > g:nth-child(3n + 1) .kelp-sway,
+.reef-back > g:nth-child(3n + 1) .kelp-sway,
+.reef-front > g:nth-child(3n + 1) .anemone-sway,
+.reef-front > g:nth-child(3n + 1) .sway-slow {
+  animation-delay: -4.1s;
+}
+@keyframes reef-sway {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+@keyframes reef-sway-small {
+  from {
+    transform: rotate(-2deg);
+  }
+  to {
+    transform: rotate(2deg);
+  }
+}
+@keyframes anemone {
+  from {
+    transform: skewX(-7deg);
+  }
+  to {
+    transform: skewX(7deg);
+  }
+}
+
+/* ---------- ikan badut di anemon ---------- */
+.nemo {
+  transition: transform 0.5s cubic-bezier(0.3, 1.4, 0.5, 1), opacity 0.4s;
+}
+.nemo-body {
+  animation: nemo 2.4s ease-in-out infinite;
+}
+@keyframes nemo {
+  50% {
+    transform: translate(3px, -3px);
+  }
+}
+.reef-item.hiding .nemo {
+  transform: translateY(18px) scale(0.5);
+  opacity: 0;
+}
+
+/* ---------- laut dalam ---------- */
+.glow-soft {
+  filter: drop-shadow(0 0 3px currentColor);
+}
+.reef .bio,
+.floor-svg .bio {
+  animation: bio 2.4s ease-in-out infinite alternate;
+}
+.plume {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: plume 2.2s ease-in-out infinite alternate;
+}
+@keyframes plume {
+  to {
+    transform: scale(1.18, 0.9);
+  }
+}
+.smoke {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: smoke 3.6s ease-out infinite;
+  opacity: 0;
+}
+@keyframes smoke {
+  from {
+    transform: translateY(0) scale(0.6);
+    opacity: 0.55;
+  }
+  to {
+    transform: translateY(-46px) scale(1.8);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .reef {
+    --reef-h: 200px;
+  }
+}

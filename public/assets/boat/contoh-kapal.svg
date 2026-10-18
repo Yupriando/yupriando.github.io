@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 220">
+  <!--
+    Contoh kapal layar. Titik penting (cocokkan dengan src/assets.js → boat):
+      ujung joran  : (24, 22)   → rodTip    [0.08, 0.10]
+      garis air    : y = 180    → waterline 0.82
+      ember        : (165, 132) → bucket    [0.55, 0.60]
+  -->
+  <!-- tiang & layar -->
+  <line x1="200" y1="150" x2="200" y2="20" stroke="#6b4423" stroke-width="5"/>
+  <path d="M204 26 L204 140 L282 140 Z" fill="#fdf6e3" stroke="#d8c9a3" stroke-width="2"/>
+  <path d="M196 34 L196 140 L132 140 Z" fill="#f2e6c9" stroke="#d8c9a3" stroke-width="2"/>
+  <text x="225" y="120" font-family="monospace" font-size="18" font-weight="bold" fill="#3a86ff">&lt;/&gt;</text>
+  <path d="M200 20 L226 26 L200 32 Z" fill="#ff5c5c"/>
+  <!-- pemancing -->
+  <rect x="96" y="128" width="30" height="16" rx="3" fill="#2a9d8f"/>
+  <path d="M104 112 C102 100 108 92 116 92 C124 92 128 100 126 112 L126 130 L104 130 Z" fill="#e76f51"/>
+  <circle cx="115" cy="82" r="10" fill="#f1c27d"/>
+  <path d="M103 80 Q115 64 127 80 Z" fill="#264653"/>
+  <circle cx="110" cy="82" r="1.4" fill="#222"/>
+  <line x1="118" y1="128" x2="24" y2="22" stroke="#3b2618" stroke-width="3" stroke-linecap="round"/>
+  <path d="M110 104 Q100 110 94 104" stroke="#e76f51" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- ember -->
+  <path d="M156 128 H174 L171 146 H159 Z" fill="#9aa5b1"/>
+  <!-- lambung -->
+  <path d="M8 146 H292 L262 186 Q150 204 40 190 Z" fill="#264653"/>
+  <path d="M8 146 H292 L288 154 H12 Z" fill="#e9c46a"/>
+  <path d="M30 176 Q150 186 276 172" stroke="#e9c46a" stroke-width="3" fill="none"/>
+  <text x="200" y="170" font-family="monospace" font-size="11" font-weight="bold" fill="#fdf6e3">KM. CONTOH</text>
+</svg>

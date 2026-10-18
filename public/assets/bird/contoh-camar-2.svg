@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 70">
+  <!-- Contoh burung, frame 2 = SAYAP DI BAWAH. -->
+  <path d="M46 48 C40 56 30 64 16 68 C26 60 32 54 34 46 Z" fill="#9aa5b1"/>
+  <path d="M16 68 l7 -7 1 5 z" fill="#2b2d42"/>
+  <path d="M8 44 L28 40 L26 50 Z" fill="#dfe4ea"/>
+  <ellipse cx="50" cy="46" rx="26" ry="9" fill="#ffffff"/>
+  <circle cx="74" cy="40" r="8" fill="#ffffff"/>
+  <path d="M80 38 L96 41 L80 44 Z" fill="#ffb703"/>
+  <circle cx="76" cy="38" r="1.6" fill="#1b1b2f"/>
+  <path d="M54 50 C50 60 44 66 32 70 C42 62 46 56 46 48 Z" fill="#cfd6dd"/>
+  <path d="M32 70 l6 -7 2 5 z" fill="#2b2d42"/>
+</svg>

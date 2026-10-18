@@ -1,0 +1,303 @@
+/* ==========================================================
+   GLOBAL — variabel warna, reset, dan komponen dasar
+   ========================================================== */
+:root {
+  --sea: 62%;
+  --nav-h: 64px;
+
+  --text: #e6f4ff;
+  --muted: #9db8cc;
+  --accent: #5ce1e6;
+  --accent-2: #3a8dde;
+  --coral: #ff7b54;
+  --gold: #ffd166;
+  --green: #39ff88;
+
+  --glass: rgba(255, 255, 255, 0.055);
+  --glass-strong: rgba(255, 255, 255, 0.09);
+  --border: rgba(255, 255, 255, 0.12);
+  --radius: 18px;
+
+  --font: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--nav-h);
+  background: #01050d;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text);
+  background: #01050d;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+html.can-grab,
+html.can-grab body {
+  cursor: grab;
+}
+html.can-poke,
+html.can-poke body,
+html.can-poke .hero-content {
+  cursor: pointer;
+}
+html.grabbing,
+html.grabbing * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+a {
+  color: inherit;
+}
+button {
+  font: inherit;
+  color: inherit;
+}
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  margin: 0;
+}
+::selection {
+  background: rgba(92, 225, 230, 0.35);
+}
+
+.mono {
+  font-family: var(--mono);
+}
+.small {
+  font-size: 0.85rem;
+}
+.muted {
+  color: var(--muted);
+}
+.accent {
+  color: var(--accent);
+}
+
+.container {
+  width: min(1120px, 100% - 32px);
+  margin-inline: auto;
+}
+
+/* Kanvas ikan: di atas latar, di bawah konten */
+.ocean-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ---------- Tombol ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: box-shadow 0.3s var(--ease), background 0.3s var(--ease), border-color 0.3s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #5ce1e6, #3a8dde);
+  color: #03203a;
+  box-shadow: 0 8px 24px rgba(92, 225, 230, 0.3);
+}
+.btn-primary:hover {
+  box-shadow: 0 12px 34px rgba(92, 225, 230, 0.5);
+}
+.btn-ghost {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.btn-small {
+  padding: 9px 18px;
+  font-size: 0.9rem;
+  background: rgba(92, 225, 230, 0.12);
+  border-color: rgba(92, 225, 230, 0.4);
+  color: var(--accent);
+}
+.btn:focus-visible,
+.chip:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Kaca (kartu transparan) ---------- */
+.glass {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+.tilt {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.tilt:hover > .glare {
+  opacity: 1;
+}
+
+/* ---------- Chip & tag ---------- */
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--glass);
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tags li {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: var(--accent);
+  background: rgba(92, 225, 230, 0.08);
+  border: 1px solid rgba(92, 225, 230, 0.25);
+}
+
+/* ---------- Area bawah laut & section ---------- */
+.ocean-main {
+  position: relative;
+  display: flow-root; /* cegah margin negatif terumbu "bocor" keluar dari main */
+  background: linear-gradient(
+    180deg,
+    #1c6e9c 0%,
+    #145b88 9%,
+    #0d4271 20%,
+    #082c55 36%,
+    #051b3b 54%,
+    #030f26 72%,
+    #020814 88%,
+    #01050d 100%
+  );
+}
+
+.zone {
+  position: relative;
+  z-index: 2;
+  padding: clamp(80px, 12vw, 140px) 0;
+}
+/* area kosong section tembus klik → terumbu karang di belakangnya tetap bisa diklik */
+.zone,
+.zone > .container {
+  pointer-events: none;
+}
+.zone > .container > * {
+  pointer-events: auto;
+}
+
+.zone-head {
+  margin-bottom: clamp(32px, 5vw, 56px);
+}
+.zone-tag {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--accent);
+  opacity: 0.85;
+  margin-bottom: 10px;
+}
+.zone-tag em {
+  color: var(--muted);
+  font-style: normal;
+}
+.section-title {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.section-title .idx {
+  font-size: 0.55em;
+  color: var(--coral);
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.title-line {
+  display: block;
+  width: min(220px, 50%);
+  height: 2px;
+  margin-top: 16px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  transform-origin: left;
+}
+
+.lead {
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sea: 70%;
+    --nav-h: 58px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

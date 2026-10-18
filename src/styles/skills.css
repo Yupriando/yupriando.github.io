@@ -1,0 +1,175 @@
+/* ==========================================================
+   KEAHLIAN — radar sonar + bar skill
+   ========================================================== */
+.skills-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: 36px;
+  align-items: center;
+}
+
+.sonar-wrap {
+  text-align: center;
+}
+.sonar {
+  position: relative;
+  width: min(100%, 360px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle, rgba(57, 255, 136, 0.08), rgba(0, 20, 30, 0.6) 70%);
+  border: 2px solid rgba(57, 255, 136, 0.35);
+  box-shadow: 0 0 40px rgba(57, 255, 136, 0.12), inset 0 0 40px rgba(0, 0, 0, 0.5);
+}
+.sonar .ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+  border: 1px solid rgba(57, 255, 136, 0.2);
+}
+.sonar .ring:nth-child(1) {
+  width: 33%;
+  height: 33%;
+}
+.sonar .ring:nth-child(2) {
+  width: 66%;
+  height: 66%;
+}
+.sonar .ring:nth-child(3) {
+  width: 99%;
+  height: 99%;
+}
+.axis-h,
+.axis-v {
+  position: absolute;
+  background: rgba(57, 255, 136, 0.15);
+}
+.axis-h {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+}
+.axis-v {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+}
+.sonar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg 290deg, rgba(57, 255, 136, 0.45) 360deg);
+  animation: sweep 4s linear infinite;
+}
+@keyframes sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.blip {
+  position: absolute;
+  translate: -50% -50%;
+  font-size: 0.68rem;
+  color: var(--green);
+  white-space: nowrap;
+  padding: 2px 6px 2px 14px;
+  opacity: 0.3;
+  animation: blip 4s linear infinite;
+}
+.blip::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+}
+@keyframes blip {
+  0% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+.sonar-caption {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.skill-cats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 16px;
+}
+.skill-cat {
+  padding: 22px;
+  height: 100%;
+}
+.skill-cat h3 {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.skill-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.sk-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+.sk-row .mono {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3a8dde, #5ce1e6);
+  box-shadow: 0 0 12px rgba(92, 225, 230, 0.6);
+}
+
+.learning {
+  margin-top: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 960px) {
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+}

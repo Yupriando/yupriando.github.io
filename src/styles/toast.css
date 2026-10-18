@@ -1,0 +1,30 @@
+/* Notifikasi kecil di bawah layar */
+.toast-wrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.toast {
+  max-width: min(520px, 100%);
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: rgba(3, 20, 40, 0.88);
+  border: 1px solid rgba(92, 225, 230, 0.35);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 24px rgba(92, 225, 230, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .toast-wrap {
+    bottom: 76px;
+  }
+}

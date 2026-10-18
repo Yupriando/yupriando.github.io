@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60">
+  <!-- Contoh ikan koi. Ikan harus MENGHADAP KE KANAN. -->
+  <path d="M22 30 C10 14 2 12 0 16 C6 24 6 36 0 44 C2 48 10 46 22 30 Z" fill="#ff8a3d" opacity=".9"/>
+  <path d="M50 14 C58 2 74 2 80 12 Z" fill="#ffffff" opacity=".85"/>
+  <path d="M54 46 C60 56 70 56 74 48 Z" fill="#ffffff" opacity=".85"/>
+  <path d="M116 30 C112 14 88 8 62 10 C40 12 26 20 20 30 C26 40 40 48 62 50 C88 52 112 46 116 30 Z" fill="#fffaf2"/>
+  <path d="M62 12 C76 12 86 18 88 26 C80 30 70 28 64 22 C60 18 58 14 62 12 Z" fill="#ff5a1f"/>
+  <path d="M34 24 C42 20 50 24 50 32 C44 38 36 36 32 30 Z" fill="#ff5a1f"/>
+  <path d="M74 38 C82 36 92 40 92 46 C84 50 76 48 72 44 Z" fill="#1d1d1d" opacity=".75"/>
+  <ellipse cx="78" cy="38" rx="9" ry="5" fill="#ffffff" opacity=".9" transform="rotate(25 78 38)"/>
+  <circle cx="101" cy="26" r="4.2" fill="#111"/>
+  <circle cx="102.4" cy="24.6" r="1.4" fill="#fff"/>
+  <path d="M112 34 q6 4 4 10" stroke="#e8c9a8" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+</svg>
