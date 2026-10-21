@@ -166,11 +166,13 @@
   background: linear-gradient(180deg, #3e6d98 0%, #2c6f9c 35%, #1c6e9c 100%);
 }
 
+/* ombak digeser dengan transform (dikerjakan GPU) — elemen dibuat lebih lebar 1 ubin di kiri */
 .wave {
   position: absolute;
-  left: 0;
+  left: -720px;
   right: 0;
   background-repeat: repeat-x;
+  will-change: transform;
   animation: wave-move linear infinite;
 }
 .wave.w1 {
@@ -200,15 +202,16 @@
 }
 @keyframes wave-move {
   to {
-    background-position-x: 720px;
+    transform: translateX(720px);
   }
 }
 .wave.w2 {
+  left: -540px;
   animation-name: wave-move-2;
 }
 @keyframes wave-move-2 {
   to {
-    background-position-x: 540px;
+    transform: translateX(540px);
   }
 }
 

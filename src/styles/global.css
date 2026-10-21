@@ -103,9 +103,11 @@ h3 {
 /* Kanvas ikan: di atas latar, di bawah konten */
 .ocean-canvas {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  height: 100lvh; /* tinggi terbesar layar HP → tidak berubah saat address bar muncul/hilang */
   z-index: 1;
   pointer-events: none;
 }

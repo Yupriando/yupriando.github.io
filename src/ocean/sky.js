@@ -370,6 +370,8 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
   }
 
   function resize() {
+    // ukuran hero tidak berubah (mis. address bar HP) → jangan buat ulang kanvas
+    if (W && W === hero.clientWidth && H === hero.clientHeight) return;
     DPR = canvasDPR();
     W = hero.clientWidth;
     H = hero.clientHeight;

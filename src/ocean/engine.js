@@ -600,6 +600,13 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   }
 
   function updateHook(dt) {
+    // kapal di luar layar → jangan baca tata letak (mahal saat scroll)
+    if (surf < 60 || surf > H - 70) {
+      if (hook.caught) escape();
+      hook.visible = false;
+      hook.dragging = false;
+      return;
+    }
     const el = document.getElementById('rod-tip');
     if (!el) { hook.visible = false; return; }
     const r = el.getBoundingClientRect();
@@ -820,10 +827,10 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       ctx.rect(0, top, W, H - top);
       ctx.clip();
 
-      drawRays(top);
+      if (level === 0) drawRays(top);
       if (giant) (giant.kind === 'whale' ? drawWhale : drawManta)(ctx, giant);
 
-      const snowAmt = clamp((depth - 150) / 900, 0, 1);
+      const snowAmt = level === 0 ? clamp((depth - 150) / 900, 0, 1) : 0;
       if (snowAmt > 0) {
         for (const s of snow) {
           ctx.fillStyle = `rgba(220,235,255,${s.a * snowAmt})`;
@@ -889,20 +896,28 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   }
 
   /* ------------------------------- LOOP ------------------------------- */
-  // kualitas adaptif: kalau perangkat kewalahan, turunkan ke 30 fps & kurangi ikan
-  let quality = 1, frameMs = 16, cap = 0, slowFor = 0;
+  /*
+   * Kualitas adaptif: fps TIDAK pernah dibatasi (selalu mengikuti layar, 60/90/120 Hz).
+   * Kalau perangkat kewalahan (< ±50 fps cukup lama), yang diturunkan kualitas gambarnya:
+   *   level 1 → ikan dikurangi, sinar matahari & salju laut dimatikan
+   *   level 2 → resolusi kanvas 1× & ikan dikurangi lagi
+   */
+  let quality = 1, level = 0, frameMs = 16, slowFor = 0, needResize = false, scrolledAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (cap && last && now - last < cap - 2) return; // lewati frame (batas fps)
     const raw = last ? now - last : 16.67;
     const dt = Math.min(raw / 16.67, 3);
     last = now;
-    frameMs = frameMs * 0.95 + Math.min(raw, 100) * 0.05;
-    if (!cap) {
-      slowFor = frameMs > 22 ? slowFor + 1 : 0;
-      if (slowFor > 90) {
-        cap = 33; // ±30 fps
-        quality = 0.7;
+    if (raw < 100) {
+      // jeda panjang (tab disembunyikan) tidak dihitung
+      frameMs = frameMs * 0.95 + raw * 0.05;
+      slowFor = frameMs > 20 ? slowFor + 1 : 0;
+      if (slowFor > 60 && level < 2) {
+        level++;
+        quality = level === 1 ? 0.7 : 0.5;
+        if (level === 2) needResize = true; // dibuat ulang nanti saat scroll berhenti
+        slowFor = 0;
+        frameMs = 16;
       }
     }
     time += dt;
@@ -913,6 +928,11 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
     const sd = window.scrollY - lastScroll;
     lastScroll = window.scrollY;
+    if (sd) scrolledAt = now;
+    if (needResize && now - scrolledAt > 400) {
+      needResize = false;
+      resize();
+    }
     if (sd && !reduce) applyParallax(sd);
 
     // ganti penghuni sesuai zona
@@ -1116,9 +1136,9 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   }
 
   function resize() {
-    DPR = canvasDPR();
+    DPR = level >= 2 ? 1 : canvasDPR();
     W = window.innerWidth;
-    H = window.innerHeight;
+    H = LITE ? Math.max(window.innerHeight, canvas.clientHeight || 0) : window.innerHeight;
     canvas.width = Math.round(W * DPR);
     canvas.height = Math.round(H * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -1138,7 +1158,12 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   for (let i = 0; i < 12 && population() < targetFish(zone); i++) spawnFish(zone, true);
   for (let i = 0; i < ZONE_JELLY[zone]; i++) jellies.push(new Jelly(zone, true));
 
-  window.addEventListener('resize', resize);
+  // di HP, address bar yang muncul/hilang saat scroll memicu resize kecil → abaikan
+  const onResize = () => {
+    if (LITE && window.innerWidth === W && Math.abs(window.innerHeight - H) < 160) return;
+    resize();
+  };
+  window.addEventListener('resize', onResize);
   window.addEventListener('pointermove', onMove, { passive: true });
   window.addEventListener('pointerdown', onDown);
   window.addEventListener('pointerup', onUp);
@@ -1151,7 +1176,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
   return () => {
     cancelAnimationFrame(raf);
-    window.removeEventListener('resize', resize);
+    window.removeEventListener('resize', onResize);
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerdown', onDown);
     window.removeEventListener('pointerup', onUp);
