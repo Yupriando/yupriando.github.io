@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { profile } from '../data';
 import { useToast } from './Toast';
-import { ReefItems, handleReefClick } from '../reef/Reef';
+import { ReefItems, handleReefClick, visibleRange } from '../reef/Reef';
 import '../styles/seafloor.css';
 
 const backHill = (x) => 192 + 12 * Math.sin(x / 190 + 0.6);
@@ -10,6 +10,8 @@ const frontSand = (x) => 268 + 7 * Math.sin(x / 210 + 2);
 
 // Dasar laut: rumput laut, karang, komputer tenggelam, kabel internet, dan peti harta karun
 export default function Seafloor() {
+  // tinggi dasar laut di layar (lihat seafloor.css) → rentang karang yang terlihat
+  const range = visibleRange(window.innerWidth <= 640 ? 460 : window.innerWidth <= 1240 ? 430 : 380, 340);
   const [open, setOpen] = useState(false);
   const [burstId, setBurstId] = useState(0);
   const toast = useToast();
@@ -27,7 +29,7 @@ export default function Seafloor() {
     <footer className="seafloor">
       <svg className="floor-svg" viewBox="0 0 1440 340" preserveAspectRatio="xMidYMax slice" aria-hidden="true" onClick={handleReefClick}>
         <path d="M0 210 C200 170 380 190 560 200 S900 160 1100 190 S1340 200 1440 180 V340 H0Z" fill="#0b1322" />
-        <ReefItems variant="abyss" seed={1234} uid="floor" contour={backHill} step={[45, 90]} scale={[0.6, 0.95]} back />
+        <ReefItems variant="abyss" seed={1234} uid="floor" contour={backHill} step={[45, 90]} scale={[0.6, 0.95]} back range={range} />
         <g fill="none" strokeLinecap="round">
           <path className="weed" d="M120 280 C110 240 135 210 118 170 C105 140 130 120 122 90" stroke="#1d5a48" strokeWidth="7" />
           <path className="weed d2" d="M140 282 C150 250 128 225 145 190 C158 160 138 140 150 115" stroke="#174a3c" strokeWidth="6" />
@@ -62,7 +64,7 @@ export default function Seafloor() {
         <ellipse cx="470" cy="276" rx="60" ry="18" fill="#152036" />
         <ellipse cx="1060" cy="282" rx="80" ry="20" fill="#152036" />
         <path d="M0 272 C240 252 420 282 700 270 S1100 252 1440 274 V340 H0Z" fill="#101a2c" />
-        <ReefItems variant="abyss" seed={5678} uid="floor" contour={frontSand} step={[70, 140]} scale={[0.7, 1]} x0={200} x1={1150} />
+        <ReefItems variant="abyss" seed={5678} uid="floor" contour={frontSand} step={[70, 140]} scale={[0.7, 1]} x0={200} x1={1150} range={range} />
         {/* kabel internet bawah laut dengan denyut data */}
         <path d="M-20 288 C200 276 380 300 620 290 S1000 276 1200 294 S1400 286 1460 290" stroke="#05080f" strokeWidth="8" fill="none" />
         <path

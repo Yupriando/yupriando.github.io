@@ -14,6 +14,7 @@ import { drawFish, drawFishGlow } from './draw';
 import { SPECIES, ZONE_FISH, applyFishAssets } from './species';
 import { loadImage, isReady } from './images';
 import { assets } from '../assets';
+import { canvasDPR } from '../perf';
 
 const BLOCK_SELECTOR = 'a, button, input, textarea, .nav';
 
@@ -369,7 +370,7 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
   }
 
   function resize() {
-    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    DPR = canvasDPR();
     W = hero.clientWidth;
     H = hero.clientHeight;
     canvas.width = Math.round(W * DPR);

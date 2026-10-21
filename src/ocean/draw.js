@@ -3,6 +3,29 @@
  * Semua ikan digambar menghadap ke kanan (+x) dengan pusat di (0,0).
  */
 import { isReady, isBroken } from './images';
+import { LITE, canvasDPR } from '../perf';
+
+/*
+ * Gambar ikan sendiri biasanya beresolusi besar (±370px). Memperkecilnya tiap frame itu mahal,
+ * jadi hasil perkecilan disimpan (per spesies, per frame, per ukuran dibulatkan 6px).
+ */
+function scaledFrame(sp, img, fi, fw, fh, w, h) {
+  const px = Math.max(8, Math.ceil(w * canvasDPR() * 1.15 / 6) * 6); // sedikit lebih besar untuk efek goyang
+  const key = `${fi}:${px}`;
+  const cache = (sp._cache ||= new Map());
+  let cv = cache.get(key);
+  if (!cv) {
+    cv = document.createElement('canvas');
+    cv.width = px;
+    cv.height = Math.max(4, Math.round((px * h) / w));
+    const cc = cv.getContext('2d');
+    cc.imageSmoothingQuality = 'high';
+    cc.drawImage(img, fi * fw, 0, fw, fh, 0, 0, cv.width, cv.height);
+    if (cache.size > 60) cache.delete(cache.keys().next().value);
+    cache.set(key, cv);
+  }
+  return cv;
+}
 
 const TAU = Math.PI * 2;
 
@@ -588,7 +611,7 @@ function imageFish(c, f) {
   c.rotate(Math.sin(f.phase) * (struggle ? 0.14 : 0.05));
   c.scale((1 + Math.sin(f.phase * 2) * 0.035) * puff, puff);
   const fi = frames > 1 ? Math.floor(performance.now() / (1000 / (sp.fps || 8)) + f.phase * 2) % frames : 0;
-  c.drawImage(img, fi * fw, 0, fw, fh, -w / 2, -h / 2, w, h);
+  c.drawImage(scaledFrame(sp, img, fi, fw, fh, w, h), -w / 2, -h / 2, w, h);
 }
 
 export function drawFish(c, f) {
@@ -646,7 +669,7 @@ export function drawFishGlow(c, f, time) {
       c.textAlign = 'center';
       c.textBaseline = 'middle';
       c.shadowColor = '#39ff88';
-      c.shadowBlur = 12;
+      c.shadowBlur = LITE ? 0 : 12; // bayangan blur mahal di HP
       c.fillStyle = f.grabbed || f.hooked ? '#ff5c7a' : '#39ff88';
       c.fillText(txt, 0, 0);
       break;

@@ -13,6 +13,7 @@ import { getDepth, getSurfaceY } from '../depth';
 import { SPECIES, ZONE_FISH, ZONE_JELLY, SOLO, zoneIndex, applyFishAssets } from './species';
 import { drawFish, drawFishGlow, drawWhale, drawManta } from './draw';
 import { airFish } from './shared';
+import { LITE, canvasDPR } from '../perf';
 
 const TAU = Math.PI * 2;
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -440,7 +441,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
   /* ------------------------------ HELPER ------------------------------ */
   const targetFish = (z) =>
-    Math.round((W < 600 ? 13 : W < 1100 ? 21 : 30) * [1, 1, 0.9, 0.7][z] * (reduce ? 0.5 : 1));
+    Math.round((W < 600 ? 13 : W < 1100 ? 21 : 30) * [1, 1, 0.9, 0.7][z] * (reduce ? 0.5 : 1) * (LITE ? 0.75 : 1) * quality);
 
   const population = () => {
     let n = 0;
@@ -888,10 +889,22 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   }
 
   /* ------------------------------- LOOP ------------------------------- */
+  // kualitas adaptif: kalau perangkat kewalahan, turunkan ke 30 fps & kurangi ikan
+  let quality = 1, frameMs = 16, cap = 0, slowFor = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    const dt = last ? Math.min((now - last) / 16.67, 3) : 1;
+    if (cap && last && now - last < cap - 2) return; // lewati frame (batas fps)
+    const raw = last ? now - last : 16.67;
+    const dt = Math.min(raw / 16.67, 3);
     last = now;
+    frameMs = frameMs * 0.95 + Math.min(raw, 100) * 0.05;
+    if (!cap) {
+      slowFor = frameMs > 22 ? slowFor + 1 : 0;
+      if (slowFor > 90) {
+        cap = 33; // ±30 fps
+        quality = 0.7;
+      }
+    }
     time += dt;
 
     surf = getSurfaceY();
@@ -1103,7 +1116,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   }
 
   function resize() {
-    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    DPR = canvasDPR();
     W = window.innerWidth;
     H = window.innerHeight;
     canvas.width = Math.round(W * DPR);

@@ -301,3 +301,51 @@ a:focus-visible {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ==========================================================
+   MODE RINGAN (HP / layar sentuh) — class .lite dari src/perf.js
+   Efek di bawah ini mahal karena kanvas ikan di belakangnya
+   berubah tiap frame, jadi dimatikan / disederhanakan.
+   ========================================================== */
+html.lite .glass,
+html.lite .nav.scrolled,
+html.lite .nav-links,
+html.lite .toast,
+html.lite .dm-readout,
+html.lite .catch-badge,
+html.lite .btn-ghost {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.lite .glass {
+  background: rgba(8, 30, 56, 0.82);
+  box-shadow: none;
+}
+html.lite .nav.scrolled,
+html.lite .nav-links {
+  background: rgba(3, 18, 38, 0.94);
+}
+html.lite .toast,
+html.lite .dm-readout,
+html.lite .catch-badge {
+  background: rgba(3, 18, 38, 0.92);
+}
+/* karang: tanpa glow & animasi goyang terus-menerus (klik tetap bergoyang) */
+html.lite .glow-soft,
+html.lite .cable-pulse {
+  filter: none !important;
+}
+html.lite .kelp-sway,
+html.lite .anemone-sway,
+html.lite .sway-slow,
+html.lite .weed,
+html.lite .reef .bio,
+html.lite .floor-svg .bio,
+html.lite .plume,
+html.lite .nemo-body,
+html.lite .stars span {
+  animation: none !important;
+}
+html.lite .tilt > .glare {
+  display: none;
+}

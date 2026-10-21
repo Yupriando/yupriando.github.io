@@ -14,6 +14,7 @@ import {
 } from './corals';
 import { assets } from '../assets';
 import { assetUrl } from '../ocean/images';
+import { LITE } from '../perf';
 import '../styles/reef.css';
 
 const R = (r, a, b) => a + r() * (b - a);
@@ -129,7 +130,20 @@ function renderShape(it, uid, pal) {
 }
 
 /* Satu baris karang di sepanjang garis kontur */
-export function ReefItems({ variant, seed, uid, contour, step = [32, 64], scale = [0.8, 1.2], back = false, x0 = -10, x1 = 1450 }) {
+/*
+ * Rentang x (koordinat viewBox 1440 lebar) yang benar-benar terlihat di layar.
+ * SVG memakai "xMidYMax slice", jadi di layar sempit bagian kiri-kanan terpotong.
+ * Di mode ringan, karang di luar rentang ini tidak dirender sama sekali.
+ */
+export function visibleRange(cssH, vbH) {
+  if (!LITE) return null;
+  const w = window.innerWidth;
+  const s = Math.max(w / 1440, cssH / vbH);
+  const half = w / s / 2 + 70;
+  return [720 - half, 720 + half];
+}
+
+export function ReefItems({ variant, seed, uid, contour, step = [32, 64], scale = [0.8, 1.2], back = false, x0 = -10, x1 = 1450, range = null }) {
   const pal = VARIANTS[variant];
   const items = useMemo(() => {
     const r = mulberry32(seed);
@@ -167,11 +181,11 @@ export function ReefItems({ variant, seed, uid, contour, step = [32, 64], scale 
 
   return (
     <g className={back ? 'reef-back' : 'reef-front'}>
-      {items.map((it, i) => (
+      {items.map((it, i) => (range && (it.x < range[0] || it.x > range[1]) ? null : (
         <g key={i} transform={`translate(${it.x} ${it.y}) scale(${f1((it.flip ? -1 : 1) * it.s * 100) / 100} ${f1(it.s * 100) / 100})`}>
           <g className={`reef-item reef-${it.type}`}>{renderShape(it, `${uid}-${back ? 'b' : 'f'}${i}`, pal)}</g>
         </g>
-      ))}
+      )))}
     </g>
   );
 }
@@ -205,6 +219,8 @@ export default function Reef({ variant = 'shallow', seed = 1, className = '' }) 
     return { backY, frontY, back: rockPath(backY), front: rockPath(frontY) };
   }, [seed]);
   const id = `${variant}-${seed}`;
+  // tinggi terumbu di layar (lihat reef.css) → rentang karang yang terlihat
+  const range = visibleRange(window.innerWidth <= 640 ? 200 : Math.min(340, Math.max(220, window.innerWidth * 0.24)), 300);
 
   return (
     <div className={`reef reef-${variant} ${className}`} aria-hidden="true">
@@ -220,9 +236,9 @@ export default function Reef({ variant = 'shallow', seed = 1, className = '' }) 
           </linearGradient>
         </defs>
         <path d={geo.back} fill={`url(#rock-b-${id})`} opacity=".7" />
-        <ReefItems variant={variant} seed={seed * 31} uid={id} contour={geo.backY} step={[30, 62]} scale={[0.5, 0.8]} back />
+        <ReefItems variant={variant} seed={seed * 31} uid={id} contour={geo.backY} step={[30, 62]} scale={[0.5, 0.8]} back range={range} />
         <path d={geo.front} fill={`url(#rock-f-${id})`} />
-        <ReefItems variant={variant} seed={seed * 97} uid={id} contour={geo.frontY} step={[34, 70]} scale={[0.75, 1.2]} />
+        <ReefItems variant={variant} seed={seed * 97} uid={id} contour={geo.frontY} step={[34, 70]} scale={[0.75, 1.2]} range={range} />
       </svg>
     </div>
   );
