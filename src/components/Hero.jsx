@@ -11,9 +11,12 @@ import '../styles/hero.css';
 
 // Langit dari gambar sendiri (src/assets.js → sky). null = langit senja bawaan.
 const SKY = assets.sky?.src ? assets.sky : null;
+// Alamat LENGKAP: url() relatif di variabel CSS dihitung dari lokasi file CSS (/assets/…),
+// bukan dari halaman — setelah build jadi /assets/assets/… (404). Dengan alamat lengkap tidak ada masalah.
+const absUrl = (src) => new URL(assetUrl(src), document.baseURI).href;
 const skyStyle = SKY && {
-  '--sky-img': `url("${assetUrl(SKY.src)}")`,
-  '--sky-img-small': `url("${assetUrl(SKY.srcSmall || SKY.src)}")`,
+  '--sky-img': `url("${absUrl(SKY.src)}")`,
+  '--sky-img-small': `url("${absUrl(SKY.srcSmall || SKY.src)}")`,
   '--sun-x': `${(SKY.sunX ?? 0.84) * 100}%`,
 };
 

@@ -10,7 +10,7 @@ export const profile = {
   logo: "yupri",
   title: "Software Developer · IT Enthusiast",
   initial: "Y",
-  photo: "assets/foto-profil.jpg", // versi kecil dari public/assets/foto.jpg (kalau tidak ada, tampil inisial)
+  photo: "assets/foto-profil.jpg", // versi kecil dari aset-asli/foto.jpg (kalau tidak ada, tampil inisial)
   email: "yupriandoo@gmail.com",
   cv: "assets/cv.pdf", // file CV ada di public/assets/cv.pdf
   roles: ["Software Developer", "IT Student", "Problem Solver", "Bug Fisher"],
