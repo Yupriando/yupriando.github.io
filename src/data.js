@@ -264,7 +264,11 @@ export const experiences = [
     date: "2026 — Present",
     role: "Champion Division Staff",
     at: "Hapkido BINUS",
-    points: [],
+    points: [
+      "Chairperson of PKM Hapkido BINUS (2026): led a community service program teaching Hapkido martial arts to junior high school students.",
+      "Treasurer of Hapkido BINUS Gathering (2026): managed the budget and finances for a Halloween-themed gathering for Hapkido members.",
+    ],
+    tags: ["Leadership", "Teaching", "Event Management", "Finance"],
   },
   {
     date: "2025 — Present",
