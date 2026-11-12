@@ -562,7 +562,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     bites++;
     splash(hook.bobX, surf, 6);
     emit('bite', { name: f.sp.name });
-    if (bites <= 2) toast('🎣 Strike! Click / drag the hook upward to reel in the fish!');
+    if (bites <= 2) toast(W < 600 ? '🎣 Strike! Tap or drag the hook up to reel in!' : '🎣 Strike! Click / drag the hook upward to reel in the fish!');
   }
 
   function escape() {

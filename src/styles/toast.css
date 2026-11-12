@@ -28,3 +28,19 @@
     bottom: 76px;
   }
 }
+
+/* HP: pil kecil di atas layar (tepat di bawah menu), tidak menutupi laut, kail & badge di bawah */
+@media (max-width: 600px) {
+  .toast-wrap.top {
+    top: calc(var(--nav-h) + 6px);
+    bottom: auto;
+    padding: 0 12px;
+  }
+  .toast {
+    max-width: min(320px, 100%);
+    padding: 7px 14px;
+    border-radius: 16px;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+}
