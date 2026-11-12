@@ -90,12 +90,19 @@ export default function Boat({ style }) {
         setCheer(true);
         setTimeout(() => setCheer(false), 1400);
         say(`Yay, caught a ${name}! 🎉`);
+        recast(1500); // sorak dulu, baru lempar kail lagi
       } else if (type === 'bug') {
         setBent(false);
         say('Another bug?! Fixing it right away 🐛✅');
+        recast(1300);
       } else if (type === 'release') {
         setBent(false);
         say(msg);
+        recast(1300);
+      } else if (type === 'ready') {
+        // kapal kembali terlihat setelah di-scroll → lempar kail lagi
+        setBent(false);
+        recast(500);
       } else if (type === 'escape') {
         setBent(false);
         say(`Aww, the ${name} got away… 😭`);
@@ -127,9 +134,8 @@ export default function Boat({ style }) {
   const [casting, setCasting] = useState(false);
   const casted = useRef(false);
   const castTimers = useRef([]);
-  const startCast = () => {
-    if (casted.current) return;
-    casted.current = true;
+  const doCast = () => {
+    castTimers.current.forEach(clearTimeout);
     setCasting(true);
     castTimers.current = [
       // ayunan ke depan (±48% animasi "cast" di hero.css) = saat pelampung lepas dari joran
@@ -137,6 +143,16 @@ export default function Boat({ style }) {
       setTimeout(() => setCasting(false), 950),
     ];
   };
+  const startCast = () => {
+    if (casted.current) return;
+    casted.current = true;
+    doCast();
+  };
+  // lempar ulang setelah ikan/bug diangkat (kail sudah keluar dari air)
+  function recast(delay) {
+    castTimers.current.forEach(clearTimeout);
+    castTimers.current = [setTimeout(doCast, delay)];
+  }
   useEffect(() => () => castTimers.current.forEach(clearTimeout), []);
 
   return (

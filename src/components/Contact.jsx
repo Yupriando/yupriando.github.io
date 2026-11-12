@@ -59,7 +59,7 @@ export default function Contact() {
           <Reveal delay={0.15}>
             <form className="glass contact-form" onSubmit={onSubmit}>
               <div className="form-head mono small">
-                <span className="accent">📡 transmit</span> --to {profile.logo}
+                <span className="accent"><Icon name="antenna" /> transmit</span> --to {profile.logo}
               </div>
               <label>
                 Name
@@ -74,7 +74,7 @@ export default function Contact() {
                 <textarea name="pesan" rows="4" required placeholder={`Hi ${profile.name}, I'd like to talk about…`} />
               </label>
               <motion.button className="btn btn-primary" type="submit" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
-                Send Signal 📡
+                Send Signal <Icon name="send" />
               </motion.button>
             </form>
           </Reveal>

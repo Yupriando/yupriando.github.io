@@ -15,11 +15,11 @@ export const profile = {
   cv: "assets/cv.pdf", // file CV ada di public/assets/cv.pdf
   roles: ["Software Developer", "IT Student", "Problem Solver", "Bug Fisher"],
   heroDesc:
-    "Just chilling out at sea, fishing for bugs. Want to get to know me better? Dive in with me 🤿",
+    "Just chilling out at sea, fishing for bugs. Want to get to know me better? Dive in with me.",
   facts: [
-    ["📍", "Indonesia"],
-    ["🎓", "Computer Science @ BINUS"],
-    ["🐠", "Aquascape hobbyist"],
+    ["pin", "Indonesia"],
+    ["cap", "Computer Science @ BINUS"],
+    ["fish", "Aquascape hobbyist"],
   ],
   aboutLead:
     "I'm a developer who believes good code is like an ocean ecosystem: tidy, connected, and alive.",
@@ -48,7 +48,7 @@ export const profile = {
 export const skillGroups = [
   {
     wide: true, // lebar penuh, skill dua kolom
-    icon: "💻",
+    icon: "code",
     name: "Languages",
     items: [
       ["JavaScript", 70],
@@ -60,7 +60,7 @@ export const skillGroups = [
     ],
   },
   {
-    icon: "⚙️",
+    icon: "server",
     name: "Backend",
     items: [
       ["Node.js / Express", 70],
@@ -70,7 +70,7 @@ export const skillGroups = [
     ],
   },
   {
-    icon: "🗄️",
+    icon: "database",
     name: "Database & Cloud",
     items: [
       ["MySQL", 70],
@@ -80,7 +80,7 @@ export const skillGroups = [
     ],
   },
   {
-    icon: "📱",
+    icon: "phone",
     name: "Mobile & Game",
     items: [
       ["Flutter", 75],
@@ -89,7 +89,7 @@ export const skillGroups = [
     ],
   },
   {
-    icon: "🖥️",
+    icon: "monitor",
     name: "Frontend",
     items: [
       ["HTML & CSS", 70],
@@ -98,7 +98,7 @@ export const skillGroups = [
   },
   {
     wide: true, // lebar penuh, skill dua kolom
-    icon: "🧰",
+    icon: "toolbox",
     name: "Tools & More",
     items: [
       ["Git & GitHub", 80],

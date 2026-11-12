@@ -72,6 +72,9 @@
   width: min(330px, calc(100vw - 32px));
   max-height: min(70vh, 520px);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(92, 225, 230, 0.35) transparent;
   padding: 16px;
   border-radius: 16px;
   background: rgba(4, 16, 34, 0.92);
@@ -141,13 +144,42 @@
 }
 .cl-grid li {
   position: relative;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s var(--ease);
+}
+/* seluruh kotak = tombol (ikan yang sudah tertangkap bisa diklik → kartu fakta) */
+.cl-cell {
+  width: 100%;
   display: grid;
   justify-items: center;
   gap: 4px;
   padding: 10px 6px 8px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.cl-grid li.unknown .cl-cell {
+  cursor: default;
+}
+.cl-grid li.got:hover {
+  border-color: rgba(92, 225, 230, 0.7);
+  background: rgba(92, 225, 230, 0.13);
+  transform: translateY(-2px);
+}
+.cl-cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.cl-tip {
+  margin: -4px 0 10px;
+  font-size: 0.7rem;
+  color: var(--muted);
   text-align: center;
 }
 .cl-grid li.got {
@@ -191,6 +223,126 @@
   right: 8px;
   font-size: 0.75rem;
 }
+/* ---------- kartu fakta ikan ---------- */
+.cl-card {
+  display: grid;
+  gap: 6px;
+  animation: cl-card-in 0.3s var(--ease);
+}
+@keyframes cl-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.cl-back {
+  justify-self: start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--accent);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.cl-back:hover {
+  background: rgba(92, 225, 230, 0.12);
+}
+.cl-card-pic {
+  display: grid;
+  place-items: center;
+  height: 96px;
+  margin: 4px 0;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 60%, rgba(92, 225, 230, 0.16), transparent 70%);
+}
+.cl-card-pic img {
+  max-width: 150px;
+  max-height: 84px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
+}
+.cl-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.05rem;
+}
+.cl-card-rare {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #2a1d00;
+  background: var(--gold);
+}
+.cl-card-sci {
+  margin: -4px 0 0;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+}
+.cl-card-count {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--gold);
+  text-align: center;
+}
+.cl-card-meta {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+}
+.cl-card-meta div {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 0.76rem;
+}
+.cl-card-meta dt {
+  color: var(--muted);
+}
+.cl-card-meta dd {
+  margin: 0;
+}
+.cl-card-facts {
+  display: grid;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cl-card-facts li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.cl-card-facts li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+.cl-card-none {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
 .cl-foot {
   display: flex;
   justify-content: space-between;
@@ -241,7 +393,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cl-new {
+  .cl-new,
+  .cl-card {
     animation: none;
   }
 }

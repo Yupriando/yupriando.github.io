@@ -65,6 +65,12 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   const root = document.documentElement;
 
   let W = 0, H = 0, DPR = 1, raf = 0, last = 0, time = 0;
+  // ukuran ikan & ubur-ubur ikut lebar layar: 100% di laptop (≥1280px), mengecil sampai 60% di HP (360px)
+  // (ukuran di species.js dalam piksel, jadi tanpa ini ikan terlihat raksasa di layar sempit)
+  const sizeK = () => clamp(0.6 + (0.4 * (W - 360)) / 920, 0.6, 1);
+  // kail & pelampung ikut mengecil di layar sempit (seimbang dengan kapal & ikan)
+  const floatH = () => FLOAT_H * sizeK();
+  const hookH = () => HOOK_H * sizeK();
   let surf = 0, depth = 0, zone = 0, spawnTimer = 0, lastScroll = window.scrollY;
   let grabbed = null, justDragged = false, hasMouse = false;
   let bugs = 0, catches = 0, bites = 0, toldGrab = false, toldFeed = false;
@@ -78,18 +84,45 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     x: 0, y: 0, tx: 0, ty: 0, bobX: 0,
     init: false, visible: false, dragging: false, reeling: false,
     caught: null, biteTime: 0, idle: 999, cooldown: 0, used: false, tip: null,
-    // lemparan pembuka: 'waiting' (kapal masih meluncur masuk) → 'flying' (pelampung melayang) → 'done'
+    // lemparan: 'waiting' (kail tergantung di joran) → 'flying' (pelampung melayang) → 'done' (di air)
+    // → 'reelup' (digulung pelan ke joran setelah ikan diangkat / kapal keluar layar) → 'waiting' lagi
     cast: 'waiting', castT: 0, castWait: 0, landX: 0,
+    away: false, // kapal/joran sedang di luar layar → kail digulung naik, dilempar lagi saat kapal terlihat
+    needReady: false, castQueued: false, reelX: 0,
   };
   const CAST_T = 44; // lama pelampung melayang (frame, ±0,7 detik)
+  const REEL_T = 72; // lama kail digulung naik ke joran (frame, ±1,2 detik)
 
-  // dipicu Boat.jsx saat si pemancing mengayunkan joran (setelah kapal berhenti)
-  const onCast = () => {
-    if (hook.cast !== 'waiting') return;
-    const onScreen = surf > 60 && surf < H - 70 && hook.tip;
-    hook.cast = onScreen ? 'flying' : 'done'; // kalau laut tidak terlihat, langsung siap tanpa animasi
+  // mulai menggulung kail dari posisi pelampung di air ke ujung joran
+  function startReel() {
+    hook.cast = 'reelup';
     hook.castT = 0;
-    if (onScreen) hook.landX = hook.tip.x - 48; // jatuh sedikit di depan joran, lalu terseret pelan ke posisi menunggu
+    hook.reelX = hook.bobX;
+    hook.castQueued = false;
+    hook.visible = false;
+  }
+  function advanceReel(dt) {
+    if ((hook.castT += dt) < REEL_T) return;
+    hook.cast = 'waiting';
+    hook.castWait = 0;
+    if (hook.castQueued) {
+      hook.castQueued = false;
+      onCast();
+    } else if (hook.needReady && !hook.away) {
+      hook.needReady = false;
+      emit('ready');
+    }
+  }
+
+  // dipicu Boat.jsx saat si pemancing mengayunkan joran (setelah kapal berhenti, dan lagi setiap habis menarik ikan)
+  const onCast = () => {
+    if (hook.cast === 'reelup') { hook.castQueued = true; return; } // lempar begitu selesai digulung
+    if (hook.cast !== 'waiting') return;
+    // kapal tidak terlihat → kail tetap tergantung; dilempar saat kapal terlihat lagi (event "ready")
+    if (hook.away || !hook.tip || surf < 60 || surf > H - 70) return;
+    hook.cast = 'flying';
+    hook.castT = 0;
+    hook.landX = hook.tip.x - 48; // jatuh sedikit di depan joran, lalu terseret pelan ke posisi menunggu
   };
 
   /* ------------------------------ IKAN ------------------------------ */
@@ -98,7 +131,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       this.type = type;
       this.sp = SPECIES[type];
       this.zone = z;
-      this.size = rand(...this.sp.size);
+      this.size = rand(...this.sp.size) * sizeK();
       this.x = x;
       this.y = y;
       this.dir = dir;
@@ -213,7 +246,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
           ay += ((best.y - this.y) / (bd || 1)) * 0.12;
           if (bd < this.size * 0.45 + 4 && !best.dead) {
             best.dead = true;
-            this.size = Math.min(this.size * 1.04, sp.size[1] * 1.5);
+            this.size = Math.min(this.size * 1.04, sp.size[1] * 1.5 * sizeK());
             for (let i = 0; i < 2; i++) bubbles.push(new Bubble(this.x, this.y, rand(1.5, 3)));
           }
         }
@@ -283,7 +316,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   class Jelly {
     constructor(z, onScreen) {
       this.zone = z;
-      this.size = rand(16, 32);
+      this.size = rand(16, 32) * sizeK();
       this.x = rand(40, Math.max(60, W - 40));
       this.y = onScreen ? rand(Math.max(surf + 60, 60), H) : H + this.size * 3;
       this.phase = Math.random() * TAU;
@@ -552,6 +585,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     root.classList.remove('grabbing');
     f.hooked = false;
     splash(f.x, surf, 14);
+    // kail digulung pelan ke joran → lalu dilempar ulang oleh pemancing (Boat.jsx, event "ocean:cast")
+    startReel();
 
     if (f.sp.protect) {
       // satwa dilindungi: langsung dilepas lagi
@@ -592,23 +627,48 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     }
   }
 
+  // kapal/joran keluar layar: kail digulung naik (tidak ikut terbawa saat scroll)
+  function reelAway(dt) {
+    if (hook.caught) escape();
+    hook.dragging = false;
+    if (!hook.away) {
+      hook.away = true;
+      hook.needReady = true;
+      if (hook.cast === 'done') startReel();
+      else if (hook.cast === 'flying') {
+        hook.cast = 'waiting';
+        hook.castWait = 0;
+      }
+    }
+    hook.visible = false;
+    if (hook.cast === 'reelup') advanceReel(dt); // tetap tergulung walau kapal tak terlihat
+  }
+
   function updateHook(dt) {
     // kapal di luar layar → jangan baca tata letak (mahal saat scroll)
-    if (surf < 60 || surf > H - 70) {
-      if (hook.caught) escape();
-      hook.visible = false;
-      hook.dragging = false;
-      return;
-    }
+    if (surf < 60 || surf > H - 70) return reelAway(dt);
     const el = document.getElementById('rod-tip');
     if (!el) { hook.visible = false; return; }
     const r = el.getBoundingClientRect();
     hook.tip = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    // ujung joran tertutup / keluar dari atas layar → anggap kapal tidak terlihat
+    if (hook.tip.y < 70) return reelAway(dt);
+    if (hook.away) {
+      // kapal terlihat lagi → minta pemancing melempar kail (Boat.jsx)
+      hook.away = false;
+      hook.castWait = 0;
+      if (hook.cast === 'waiting') {
+        hook.needReady = false;
+        emit('ready');
+      } // masih digulung → "ready" dikirim saat selesai (advanceReel)
+    }
 
     // kail belum dilempar: belum ada di air (tidak digambar & ikan tidak bisa menggigit)
     if (hook.cast !== 'done') {
       hook.visible = false;
-      if (hook.cast === 'waiting') {
+      if (hook.cast === 'reelup') {
+        advanceReel(dt);
+      } else if (hook.cast === 'waiting') {
         hook.castWait += dt;
         if (hook.castWait > 420) onCast(); // cadangan kalau sinyal dari kapal tidak datang (±7 detik)
       } else if ((hook.castT += dt) >= CAST_T) {
@@ -681,13 +741,13 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     c.lineWidth = 1.1;
     c.beginPath();
     // tali ke kail turun dari cincin di bawah pelampung (gambar), atau dari permukaan (pelampung bawaan)
-    const startY = isReady(FLOAT_IMG) ? floatWaterY() + (FLOAT_EYE - FLOAT_WL) * FLOAT_H : surf;
+    const startY = isReady(FLOAT_IMG) ? floatWaterY() + (FLOAT_EYE - FLOAT_WL) * floatH() : surf;
     c.moveTo(hook.bobX, startY);
     c.lineTo(x, y - 10);
     c.stroke();
     if (isReady(HOOK_IMG)) {
       // kail + cacing dari gambar: mata kail tepat di ujung tali, bergoyang pelan terbawa arus
-      const h = HOOK_H;
+      const h = hookH();
       const w = (h * HOOK_IMG.naturalWidth) / HOOK_IMG.naturalHeight;
       c.save();
       c.translate(x, y - 10);
@@ -759,7 +819,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
    * (tempat tali dari joran) & cincin bawah (tempat tali ke kail).
    */
   function drawFloatImage(c, x, waterY, submerged) {
-    const h = FLOAT_H;
+    const h = floatH();
     const w = (h * FLOAT_IMG.naturalWidth) / FLOAT_IMG.naturalHeight;
     const top = waterY - FLOAT_WL * h;
     if (!submerged) {
@@ -795,8 +855,82 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     c.fillRect(x - 0.75, y - 9, 1.5, 4);
   }
 
+  // kail + cacing dengan mata kail di (ex, ey); rot = kemiringan (radian)
+  function drawHookAt(c, ex, ey, rot) {
+    if (isReady(HOOK_IMG)) {
+      const h = hookH();
+      const w = (h * HOOK_IMG.naturalWidth) / HOOK_IMG.naturalHeight;
+      c.save();
+      c.translate(ex, ey);
+      c.rotate(rot);
+      c.drawImage(HOOK_IMG, -HOOK_EYE[0] * w, -HOOK_EYE[1] * h, w, h);
+      c.restore();
+    } else drawHookShape(c, ex, ey + 10);
+  }
+
+  /*
+   * Pelampung yang menggantung / melayang, dengan kail tergantung di bawahnya.
+   * (x, at) = ujung antena pelampung (tempat tali dari joran). Mengembalikan y ujung antena.
+   */
+  function drawRig(c, x, at, rot) {
+    const img = isReady(FLOAT_IMG);
+    let eyeY;
+    if (img) {
+      eyeY = drawFloatImage(c, x, at + FLOAT_WL * floatH(), false).eye;
+    } else {
+      drawBobber(c, x, at + 9);
+      eyeY = at + 14;
+    }
+    // tali pendek pelampung → kail
+    const hx = x + Math.sin(rot) * 8;
+    const hy = eyeY + Math.cos(rot) * 8;
+    c.strokeStyle = 'rgba(255,255,255,.75)';
+    c.lineWidth = 1.1;
+    c.beginPath();
+    c.moveTo(x, eyeY);
+    c.lineTo(hx, hy);
+    c.stroke();
+    drawHookAt(c, hx, hy, -rot);
+  }
+
   function drawHookAbove(c) {
     if (!hook.tip) return;
+    if (hook.cast === 'reelup') {
+      // digulung: pelampung + kail naik pelan dari air ke ujung joran, tali memendek, sedikit berayun
+      if (surf < 60 || surf > H - 70) return;
+      const { tip } = hook;
+      const p = Math.min(1, hook.castT / REEL_T);
+      const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; // pelan → cepat → pelan
+      const startAt = isReady(FLOAT_IMG) ? surf - FLOAT_WL * floatH() : surf - 16;
+      const endAt = tip.y + 8;
+      const x = hook.reelX + (tip.x - hook.reelX) * e;
+      const at = startAt + (endAt - startAt) * e - Math.sin(Math.PI * p) * 10;
+      c.strokeStyle = 'rgba(255,255,255,.75)';
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.moveTo(tip.x, tip.y);
+      c.lineTo(x, at);
+      c.stroke();
+      drawRig(c, x, at, Math.sin(p * Math.PI * 3) * 0.25 * (1 - p) + Math.sin(time * 0.05) * 0.12 * p);
+      return;
+    }
+    if (hook.cast === 'waiting') {
+      // belum dilempar: pelampung + kail tergantung di ujung joran, bergoyang pelan
+      if (surf < 60 || surf > H - 70) return;
+      const { tip } = hook;
+      const sway = Math.sin(time * 0.05) * 0.12;
+      const len = 8;
+      const x = tip.x + Math.sin(sway) * len;
+      const at = tip.y + Math.cos(sway) * len;
+      c.strokeStyle = 'rgba(255,255,255,.75)';
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.moveTo(tip.x, tip.y);
+      c.lineTo(x, at);
+      c.stroke();
+      drawRig(c, x, at, sway * 1.4);
+      return;
+    }
     if (hook.cast === 'flying') {
       // pelampung terbang melengkung dari ujung joran ke laut, tali ikut terulur
       const { tip } = hook;
@@ -806,9 +940,9 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       const endY = img ? surf : surf - 7; // titik garis air (gambar) / pusat bola (bawaan) saat mendarat
       const tx = tip.x + (hook.landX - tip.x) * e;
       const ty = tip.y + (endY - tip.y) * e - Math.sin(Math.PI * p) * 70;
-      // gambar dulu supaya tahu ujung antenanya, lalu tali ke ujung antena
-      const at = img ? drawFloatImage(c, tx, ty, false).top : ty;
-      if (!img) drawBobber(c, tx, ty);
+      // pelampung + kail ikut terbang (kail tertinggal sedikit di belakang), lalu tali ke ujung antena
+      const at = img ? ty - FLOAT_WL * floatH() : ty - 9;
+      drawRig(c, tx, at, (1 - p) * 0.6);
       c.strokeStyle = 'rgba(255,255,255,.75)';
       c.lineWidth = 1.2;
       c.beginPath();
@@ -1218,7 +1352,14 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     DPR = level >= 2 ? 1 : canvasDPR();
     // lebar TANPA scrollbar (sama dengan lebar kanvas di CSS). window.innerWidth ikut menghitung scrollbar,
     // sehingga isi kanvas terskala & semua gambar (tali pancing, ikan, kail) bergeser beberapa px.
+    const k0 = W ? sizeK() : 0;
     W = viewportW();
+    // layar berubah lebar (HP diputar, jendela di-resize) → ikan yang sudah ada ikut menyesuaikan ukuran
+    if (k0 && sizeK() !== k0) {
+      const r = sizeK() / k0;
+      for (const f of fishes) f.size *= r;
+      for (const j of jellies) j.size *= r;
+    }
     H = LITE ? Math.max(window.innerHeight, canvas.clientHeight || 0) : window.innerHeight;
     canvas.width = Math.round(W * DPR);
     canvas.height = Math.round(H * DPR);

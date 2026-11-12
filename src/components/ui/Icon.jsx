@@ -1,5 +1,44 @@
-// Ikon SVG sederhana untuk media sosial
-export default function Icon({ name }) {
+// Ikon SVG sederhana: logo media sosial + ikon garis seragam (pengganti emoji di bagian utama).
+// Ikon garis mengikuti warna teks (currentColor) dan ukuran huruf (1em) → tampil sama di semua perangkat.
+const LINE = {
+  pin: <><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></>,
+  cap: <><path d="M2 9l10-5 10 5-10 5z" /><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 9v6" /></>,
+  fish: <><path d="M7 12c2.4-3.8 6-5.3 9.3-4.8 2.7.4 4.6 2.5 5.7 4.8-1.1 2.3-3 4.4-5.7 4.8C13 17.3 9.4 15.8 7 12z" /><path d="M7 12 2.5 8.5v7z" /><circle cx="17.5" cy="11" r="0.9" fill="currentColor" /></>,
+  code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />,
+  server: <><rect x="3" y="4" width="18" height="7" rx="2" /><rect x="3" y="13" width="18" height="7" rx="2" /><path d="M7 7.5h.01M7 16.5h.01" /></>,
+  database: <><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" /></>,
+  phone: <><rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M11 18h2" /></>,
+  monitor: <><rect x="2" y="4" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></>,
+  toolbox: <><rect x="3" y="8" width="18" height="12" rx="2" /><path d="M9 8V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3M3 13h18M10 12v2.5h4V12" /></>,
+  send: <path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" />,
+  antenna: <><path d="M5 11a7 7 0 0 1 14 0M8.5 11a3.5 3.5 0 0 1 7 0M12 12v9" /><circle cx="12" cy="11" r="1" fill="currentColor" /></>,
+  file: <><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h6" /></>,
+  download: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
+  'arrow-up': <path d="M12 20V5M6 11l6-6 6 6" />,
+  play: <path d="M7 4v16l13-8z" fill="currentColor" />,
+  palette: <><path d="M12 3a9 9 0 0 0 0 18c1.1 0 1.5-.8 1.5-1.5 0-.9-.7-1.3-.7-2.2 0-.8.7-1.3 1.5-1.3H17a4 4 0 0 0 4-4c0-5-4-9-9-9z" /><circle cx="7.5" cy="11" r="1" fill="currentColor" /><circle cx="10" cy="7" r="1" fill="currentColor" /><circle cx="15" cy="7.5" r="1" fill="currentColor" /></>,
+  anchor: <><circle cx="12" cy="5" r="2.5" /><path d="M12 7.5V21M8 11h8M4 13a8 8 0 0 0 16 0" /></>,
+  hook: <><circle cx="15" cy="3.5" r="1.5" /><path d="M15 5v9a5 5 0 0 1-10 0v-3l3 3" /></>,
+  bug: <><rect x="8" y="7" width="8" height="13" rx="4" /><path d="M9.5 7a2.5 2.5 0 0 1 5 0M12 11v9M4 13h4M16 13h4M5 8l3 2M19 8l-3 2M5 19l3-2M19 19l-3-2" /></>,
+};
+
+export default function Icon({ name, className = '' }) {
+  if (LINE[name]) {
+    return (
+      <svg
+        className={`ic ${className}`.trim()}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        {LINE[name]}
+      </svg>
+    );
+  }
   switch (name) {
     case 'github':
       return (

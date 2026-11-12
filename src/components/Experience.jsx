@@ -4,6 +4,7 @@ import { experiences } from '../data';
 import Reveal from './ui/Reveal';
 import SectionHead from './ui/SectionHead';
 import '../styles/experience.css';
+import Icon from './ui/Icon';
 
 export default function Experience() {
   const listRef = useRef(null);
@@ -18,7 +19,7 @@ export default function Experience() {
         <ol className="timeline" ref={listRef}>
           <span className="tl-track" aria-hidden="true" />
           <motion.span className="tl-progress" style={{ scaleY: scrollYProgress }} aria-hidden="true" />
-          <span className="tl-anchor" aria-hidden="true">⚓</span>
+          <span className="tl-anchor" aria-hidden="true"><Icon name="anchor" /></span>
 
           {experiences.map((exp, i) => (
             <Reveal as="li" className="tl-item" key={exp.role + exp.date} x={-40} y={0} delay={i * 0.05}>

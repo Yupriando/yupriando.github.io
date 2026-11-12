@@ -6,6 +6,7 @@ import TiltCard from './ui/TiltCard';
 import SectionHead from './ui/SectionHead';
 import Counter from './ui/Counter';
 import '../styles/about.css';
+import Icon from './ui/Icon';
 
 // Menampilkan nilai JS dengan pewarnaan sintaks sederhana
 function CodeValue({ value }) {
@@ -48,7 +49,7 @@ export default function About() {
               <ul className="facts">
                 {profile.facts.map(([icon, text]) => (
                   <li key={text}>
-                    <span>{icon}</span> {text}
+                    <Icon name={icon} /> {text}
                   </li>
                 ))}
                 <li>
@@ -56,7 +57,7 @@ export default function About() {
                 </li>
               </ul>
               <a className="btn btn-small" href={profile.cv} download>
-                Download CV ⬇
+                <Icon name="download" /> Download CV
               </a>
             </TiltCard>
           </Reveal>

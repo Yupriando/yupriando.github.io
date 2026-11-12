@@ -8,11 +8,12 @@ import TiltCard from './ui/TiltCard';
 import DemoModal from './DemoModal';
 import { assetUrl } from '../ocean/images';
 import '../styles/projects.css';
+import Icon from './ui/Icon';
 
 const TRY_LABEL = {
-  app: '▶ Try It Live',
-  api: '▶ Try the API',
-  design: '🎨 View Design',
+  app: ['play', 'Try It Live'],
+  api: ['play', 'Try the API'],
+  design: ['palette', 'View Design'],
 };
 
 const STATUS = {
@@ -93,7 +94,7 @@ export default function Projects() {
                     <div className="project-links">
                       {p.demo && (
                         <button className="btn btn-primary btn-try" onClick={() => openDemo(p)}>
-                          {TRY_LABEL[p.demoType] || TRY_LABEL.app}
+                          {(([ic, label]) => <><Icon name={ic} /> {label}</>)(TRY_LABEL[p.demoType] || TRY_LABEL.app)}
                         </button>
                       )}
                       <a href={p.url} target="_blank" rel="noopener">

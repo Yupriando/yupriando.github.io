@@ -4,6 +4,7 @@ import Reveal from './ui/Reveal';
 import SectionHead from './ui/SectionHead';
 import TiltCard from './ui/TiltCard';
 import '../styles/skills.css';
+import Icon from './ui/Icon';
 
 const SWEEP_SECONDS = 4;
 
@@ -58,7 +59,7 @@ export default function Skills() {
               <Reveal key={group.name} delay={gi * 0.1} className={group.wide ? 'skill-cat-wide' : undefined}>
                 <TiltCard className="glass skill-cat" max={group.wide ? 2 : 5}>
                   <h3>
-                    <span className="ico">{group.icon}</span> {group.name}
+                    <Icon name={group.icon} className="ico" /> {group.name}
                   </h3>
                   <ul className={`skill-list${group.wide ? ' two-col' : ''}`}>
                     {group.items.map(([name, level], i) => (

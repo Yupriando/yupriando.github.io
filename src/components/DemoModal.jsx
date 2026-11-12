@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import Icon from './ui/Icon';
 
 const HINTS = {
   app: 'This app is running live, go ahead and try it 👆',
@@ -58,8 +59,9 @@ export default function DemoModal({ project, onClose }) {
                   className={`demo-btn hide-sm${mobile ? ' on' : ''}`}
                   onClick={() => setMobile((m) => !m)}
                   title="View mobile version"
+                  aria-label="View mobile version"
                 >
-                  📱
+                  <Icon name="phone" />
                 </button>
                 <a className="demo-btn" href={project.demo} target="_blank" rel="noopener" title="Open in a new tab">
                   ↗

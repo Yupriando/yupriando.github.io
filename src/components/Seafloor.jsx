@@ -6,6 +6,7 @@ import { ReefItems, handleReefClick, visibleRange } from '../reef/Reef';
 import { assets } from '../assets';
 import { assetUrl } from '../ocean/images';
 import '../styles/seafloor.css';
+import Icon from './ui/Icon';
 
 // Tanah dasar laut dari gambar sendiri (src/assets.js → seafloor). Kosong = bentuk warna polos bawaan.
 const GROUND = assets.seafloor || {};
@@ -203,7 +204,7 @@ export default function Seafloor() {
               exit={{ opacity: 0, y: 10, scale: 0.9 }}
               transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.25 }}
             >
-              📜 Grab my CV
+              <Icon name="file" /> Grab my CV
             </motion.a>
           )}
         </AnimatePresence>
@@ -372,7 +373,7 @@ export default function Seafloor() {
           whileHover={{ y: -3 }}
           whileTap={{ scale: 0.95 }}
         >
-          🫧 Back to the surface
+          <Icon name="arrow-up" /> Back to the surface
         </motion.button>
         <p className="small muted">
           © {new Date().getFullYear()} {profile.name} · built with React, Framer Motion &amp; 🐟 ·{' '}
