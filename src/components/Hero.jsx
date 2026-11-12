@@ -129,6 +129,9 @@ export default function Hero() {
           <span className="prompt">~$</span> whoami → <span className="typed">{typed}</span>
           <span className="caret" />
         </motion.p>
+        <motion.p className="hero-headline" {...fadeUp(1.3)}>
+          {profile.headline}
+        </motion.p>
         <motion.p className="hero-desc" {...fadeUp(1.4)}>
           {profile.heroDesc}
         </motion.p>

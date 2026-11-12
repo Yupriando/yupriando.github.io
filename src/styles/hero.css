@@ -469,6 +469,16 @@
   max-width: 440px;
   color: rgba(255, 240, 230, 0.85);
 }
+/* satu baris jelas untuk recruiter (profile.headline di src/data.js) */
+.hero-headline {
+  margin: 12px 0 0;
+  max-width: 460px;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 20, 40, 0.45);
+}
 .hero-cta {
   display: flex;
   flex-wrap: wrap;

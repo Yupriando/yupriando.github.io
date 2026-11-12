@@ -14,6 +14,8 @@ export const profile = {
   email: "yupriandoo@gmail.com",
   cv: "assets/cv.pdf", // file CV ada di public/assets/cv.pdf
   roles: ["Software Developer", "IT Student", "Problem Solver", "Bug Fisher"],
+  // satu baris jelas untuk recruiter (tampil di bawah tagline hero)
+  headline: "Computer Science student at BINUS University · building web, mobile & backend apps · open to internships",
   heroDesc:
     "Just chilling out at sea, fishing for bugs. Want to get to know me better? Dive in with me.",
   facts: [
