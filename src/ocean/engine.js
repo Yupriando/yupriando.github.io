@@ -1062,23 +1062,190 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   }
 
   /* ------------------------------ GAMBAR ------------------------------ */
-  function drawRays(top) {
-    const a = clamp(1 - depth / 700, 0, 1) * 0.09;
-    if (a <= 0.002) return;
-    const g = ctx.createLinearGradient(0, top, 0, top + H * 0.9);
-    g.addColorStop(0, `rgba(255,255,255,${a})`);
-    g.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g;
-    for (let i = 0; i < 5; i++) {
-      const x0 = W * (i / 5 + 0.08) + Math.sin(time * 0.006 + i * 1.7) * 40;
-      ctx.beginPath();
-      ctx.moveTo(x0 - 20, top);
-      ctx.lineTo(x0 + 30, top);
-      ctx.lineTo(x0 + 190, top + H);
-      ctx.lineTo(x0 + 60, top + H);
-      ctx.closePath();
-      ctx.fill();
+  /*
+   * Cahaya bawah air semi-realistis (tanpa aset):
+   *  - sinar matahari: berkas lembut yang memancar dari arah matahari (src/assets.js → sky.sunX),
+   *    lebar & terangnya berbeda-beda, berkelip pelan, memudar ke bawah
+   *  - riak cahaya (caustics): pola jaring cahaya bergerak tepat di bawah permukaan
+   *  - permukaan dari bawah: garis air berkilau & bergelombang
+   * Gambar bantu (sprite) dibuat sekali di awal, jadi tiap frame hanya drawImage/pattern (murah).
+   */
+  const SUN_X = assets.sky?.sunX ?? 0.8;
+  const RAYS = Array.from({ length: 9 }, (_, i) => ({
+    off: (i - 4) / 4 + rand(-0.08, 0.08), // sebaran sudut dari arah matahari
+    w: rand(26, 110),
+    a: rand(0.5, 1),
+    sp: rand(0.004, 0.011),
+    ph: rand(0, TAU),
+  }));
+  let raySprite = null, causticPat = null, causticTile = null, rayBuf = null;
+  const RAY_RES = 0.25; // sinar digambar di kanvas ¼ resolusi lalu diperbesar (sinar memang lembut → tak terlihat beda, jauh lebih ringan)
+
+  function makeRaySprite() {
+    // profil lembut: tengah terang, tepi memudar (gauss); atas terang, bawah memudar
+    const w = 64, h = 256;
+    const cv = document.createElement('canvas');
+    cv.width = w;
+    cv.height = h;
+    const g = cv.getContext('2d');
+    const img = g.createImageData(w, h);
+    for (let y = 0; y < h; y++) {
+      const v = Math.pow(1 - y / h, 1.6);
+      for (let x = 0; x < w; x++) {
+        const d = (x - w / 2) / (w / 2);
+        const a = Math.exp(-d * d * 3.2) * v;
+        const k = (y * w + x) * 4;
+        img.data[k] = 235;
+        img.data[k + 1] = 250;
+        img.data[k + 2] = 255;
+        img.data[k + 3] = Math.round(a * 255);
+      }
     }
+    g.putImageData(img, 0, 0);
+    return cv;
+  }
+
+  function makeCausticPattern() {
+    // pola jaring cahaya yang bisa diulang (semua frekuensi = kelipatan ukuran ubin → tanpa sambungan)
+    const n = 192;
+    const cv = document.createElement('canvas');
+    cv.width = n;
+    cv.height = n;
+    const g = cv.getContext('2d');
+    const img = g.createImageData(n, n);
+    const f = TAU / n;
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        const u = x * f, v = y * f;
+        const a1 = Math.sin(u * 3 + 1.7 * Math.sin(v * 2 + Math.sin(u * 1)));
+        const a2 = Math.sin(v * 3 + 1.7 * Math.sin(u * 2 + Math.sin(v * 1) + 1.3));
+        const a3 = Math.sin((u + v) * 2 + 1.4 * Math.sin((u - v) * 1 + 0.6));
+        const m = Math.min(Math.abs(a1), Math.abs(a2), Math.abs(a3));
+        const line = Math.pow(Math.max(0, 1 - m * 3.2), 2.2); // garis tipis terang di tempat gelombang bertemu
+        const k = (y * n + x) * 4;
+        img.data[k] = 225;
+        img.data[k + 1] = 248;
+        img.data[k + 2] = 255;
+        img.data[k + 3] = Math.round(line * 255);
+      }
+    }
+    g.putImageData(img, 0, 0);
+    causticTile = cv;
+    return ctx.createPattern(cv, 'repeat');
+  }
+
+  function drawRays(top) {
+    const fade = clamp(1 - depth / 750, 0, 1);
+    if (fade <= 0.01) return;
+    if (!raySprite) raySprite = makeRaySprite();
+    // sumber cahaya: jauh di atas permukaan, searah matahari di langit
+    const sx = W * SUN_X, sy = surf - H * 0.9;
+    const len = H * 1.15;
+    const bw = Math.max(1, Math.ceil(W * RAY_RES)), bh = Math.max(1, Math.ceil(H * RAY_RES));
+    if (!rayBuf) rayBuf = document.createElement('canvas');
+    if (rayBuf.width !== bw || rayBuf.height !== bh) {
+      rayBuf.width = bw;
+      rayBuf.height = bh;
+    }
+    const b = rayBuf.getContext('2d');
+    b.setTransform(1, 0, 0, 1, 0, 0);
+    b.clearRect(0, 0, bw, bh);
+    let any = false;
+    for (const r of RAYS) {
+      const flick = 0.55 + 0.45 * Math.sin(time * r.sp + r.ph);
+      const a = 0.12 * r.a * flick * fade;
+      if (a < 0.004) continue;
+      any = true;
+      // titik masuk di permukaan, bergeser pelan seperti terbawa ombak
+      const ex = sx + r.off * W * 0.55 + Math.sin(time * 0.003 + r.ph) * 30;
+      const ang = Math.atan2(ex - sx, top - sy);
+      b.globalAlpha = a;
+      b.setTransform(RAY_RES, 0, 0, RAY_RES, 0, 0);
+      b.translate(ex, top);
+      b.rotate(-ang);
+      b.drawImage(raySprite, -r.w / 2, 0, r.w, len);
+    }
+    if (any) ctx.drawImage(rayBuf, 0, 0, W, H);
+  }
+
+  let cBuf = null, cPat = null;
+  function drawCaustics(top) {
+    // hanya dekat permukaan (permukaan terlihat di layar) & tidak di mode ringan
+    if (LITE || surf < -260 || surf > H) return;
+    const band = Math.min(240, H * 0.35);
+    // digambar di kanvas ½ resolusi lalu diperbesar → beban ±4× lebih ringan, riak tetap terlihat
+    const R = 0.5;
+    const bw = Math.max(1, Math.ceil(W * R)), bh = Math.max(1, Math.ceil(band * R));
+    if (!cBuf) cBuf = document.createElement('canvas');
+    if (cBuf.width !== bw || cBuf.height !== bh) {
+      cBuf.width = bw;
+      cBuf.height = bh;
+    }
+    const b = cBuf.getContext('2d');
+    if (!cPat) {
+      causticPat = causticPat || makeCausticPattern();
+      cPat = b.createPattern(causticTile, 'repeat');
+    }
+    b.setTransform(1, 0, 0, 1, 0, 0);
+    b.clearRect(0, 0, bw, bh);
+    b.fillStyle = cPat;
+    const strips = 8;
+    const sh = band / strips;
+    // dua lapis bergerak berlawanan arah → pola terlihat "bernapas" seperti riak sungguhan
+    for (const [dx, dy, k] of [[time * 0.35, time * 0.18, 1], [-time * 0.27, time * 0.12 + 60, 0.7]]) {
+      const ox = ((dx % 192) + 192) % 192, oy = ((dy % 192) + 192) % 192;
+      for (let i = 0; i < strips; i++) {
+        b.globalAlpha = 0.16 * k * Math.pow(1 - i / strips, 1.5);
+        // geser asal pola (bukan kotaknya) → riak cahaya mengalir
+        b.setTransform(R, 0, 0, R, 0, 0);
+        b.translate(ox, oy);
+        b.fillRect(-ox, i * sh - oy, W, sh + 1);
+      }
+    }
+    if (surf + band > top) ctx.drawImage(cBuf, 0, surf, W, band);
+  }
+
+  // kilauan matahari di permukaan: garis pendek terang yang berkelip acak, rapat di dekat arah matahari
+  const GLINTS = Array.from({ length: 70 }, () => {
+    const g = (rand(-1, 1) + rand(-1, 1) + rand(-1, 1)) / 3; // sebaran mengumpul di tengah
+    return { g, d: Math.pow(Math.random(), 1.7), len: rand(4, 16), sp: rand(0.05, 0.14), ph: rand(0, TAU) };
+  });
+  function drawGlints() {
+    if (surf < -10 || surf > H) return;
+    const band = 9; // hanya di garis permukaan
+    const cx = W * SUN_X;
+    ctx.fillStyle = 'rgb(255,246,215)';
+    for (const p of GLINTS) {
+      const tw = Math.sin(time * p.sp + p.ph);
+      if (tw <= 0.35) continue;
+      const k = (tw - 0.35) / 0.65;
+      const y = surf + 3 + p.d * band;
+      const spread = 60 + p.d * 90;
+      const x = cx + p.g * spread + Math.sin(time * 0.01 + p.ph) * 6;
+      ctx.globalAlpha = k * k * (1 - p.d * 0.6) * 0.85;
+      const l = p.len * (0.6 + p.d * 0.6);
+      ctx.fillRect(x - l / 2, y, l, 1.1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawSurfaceUnderside() {
+    // permukaan air dilihat dari bawah: pita terang tipis + garis berkilau bergelombang
+    if (surf < -10 || surf > H) return;
+    const g = ctx.createLinearGradient(0, surf, 0, surf + 26);
+    g.addColorStop(0, 'rgba(210,245,255,0.28)');
+    g.addColorStop(1, 'rgba(210,245,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, surf, W, 26);
+    ctx.strokeStyle = 'rgba(235,252,255,0.5)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 12) {
+      const y = surf + 2.5 + Math.sin(x * 0.035 + time * 0.05) * 1.6 + Math.sin(x * 0.011 - time * 0.03) * 1.4;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
   }
 
   function draw() {
@@ -1090,7 +1257,10 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       ctx.rect(0, top, W, H - top);
       ctx.clip();
 
-      if (level === 0) drawRays(top);
+      if (level === 0) drawCaustics(top); // kualitas turun otomatis (perangkat lambat) → riak dulu yang dimatikan
+      if (level < 2) drawRays(top);
+      if (level === 0 || !LITE) drawSurfaceUnderside();
+      drawGlints();
       if (giant) (giant.kind === 'whale' ? drawWhale : drawManta)(ctx, giant);
 
       const snowAmt = level === 0 ? clamp((depth - 150) / 900, 0, 1) : 0;

@@ -54,16 +54,50 @@
 .has-sky-image .hero-content {
   text-shadow: 0 2px 18px rgba(4, 24, 56, 0.55);
 }
-/* laut siang: lebih cerah di permukaan, menyatu ke biru dalam di bawah */
+/* laut siang semi-realistis: permukaan memantulkan langit (lebih terang & sedikit kabur di cakrawala),
+   lalu makin dalam makin biru tua. Ombak punya gradasi + garis kilau tipis di puncaknya. */
 .has-sky-image .sea {
-  background: linear-gradient(180deg, #4f9ccc 0%, #2f82b6 30%, #1c6e9c 100%);
+  background: linear-gradient(180deg, #7fbde2 0%, #5aa5d2 5%, #3f8fc2 20%, #2f82b6 42%, #1c6e9c 100%);
 }
-.has-sky-image .wave.w1,
-.has-sky-image .wave-front {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 60' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20 V60 H0Z' fill='%234f9ccc'/%3E%3C/svg%3E");
+.has-sky-image .sea::before {
+  /* kabut tipis di cakrawala + pantulan langit yang bergelombang samar */
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 38%;
+  background:
+    linear-gradient(180deg, rgba(220, 240, 255, 0.35), transparent 45%),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px);
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent);
+  mask-image: linear-gradient(180deg, #000, transparent);
+  pointer-events: none;
+}
+.has-sky-image .wave.w1 {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 60' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0.1' stop-color='%238ac6e7'/%3E%3Cstop offset='0.55' stop-color='%235aa5d2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20 V60 H0Z' fill='url%28%23g%29'/%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20' fill='none' stroke='%23fff' stroke-opacity='0.45' stroke-width='1.6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
 }
 .has-sky-image .wave.w2 {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 60' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20 V60 H0Z' fill='%23a3d4ef'/%3E%3C/svg%3E");
+  opacity: 0.6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 60' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0.1' stop-color='%23bfe2f5'/%3E%3Cstop offset='0.55' stop-color='%238ac6e7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20 V60 H0Z' fill='url%28%23g%29'/%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20' fill='none' stroke='%23fff' stroke-opacity='0.6' stroke-width='1.6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}
+.has-sky-image .wave-front {
+  /* bagian bawah ombak depan memudar → menyatu dengan warna laut, tanpa garis patah */
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+  mask-image: linear-gradient(180deg, #000 55%, transparent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 60' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0.1' stop-color='%236db2dc'/%3E%3Cstop offset='0.45' stop-color='%234f9ccc'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20 V60 H0Z' fill='url%28%23g%29'/%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20' fill='none' stroke='%23fff' stroke-opacity='0.4' stroke-width='1.6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}
+/* pantulan matahari: cahaya lembut di permukaan (kilauan berkelipnya digambar di kanvas → drawGlints) */
+.has-sky-image .sun-reflect {
+  left: var(--sun-x);
+  width: 260px;
+  margin-left: -130px;
+  height: 45%;
+  background: radial-gradient(ellipse 45% 70% at 50% 0, rgba(255, 238, 195, 0.5), rgba(255, 238, 195, 0.12) 45%, transparent 72%);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+/* sinar matahari di dalam air digambar di kanvas (src/ocean/engine.js → drawRays) */
+.has-sky-image .rays {
+  display: none;
 }
 
 .sky-dim {

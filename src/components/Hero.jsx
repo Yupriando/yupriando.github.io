@@ -65,7 +65,7 @@ export default function Hero() {
   const textY = useTransform(scrollYProgress, [0, 1], [0, -180]);
   const textOpacity = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
   const sunY = useTransform(scrollYProgress, [0, 1], [0, 140]);
-  const boatY = useTransform(scrollYProgress, [0, 1], [0, 70]);
+  const boatY = useTransform(scrollYProgress, [0, 1], [0, 18]); // kecil saja: kapal sedikit turun, tidak sampai tenggelam
   const skyDim = useTransform(scrollYProgress, [0, 1], [0, 0.6]);
   const hintOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
 import { boatLines } from '../data';
 import { assets } from '../assets';
 import { assetUrl } from '../ocean/images';
@@ -155,10 +155,19 @@ export default function Boat({ style }) {
   }
   useEffect(() => () => castTimers.current.forEach(clearTimeout), []);
 
+  // kapal ikut turun sedikit saat di-scroll (parallax, style.y). Bagian yang turun di bawah permukaan laut
+  // dipotong → kapal terlihat makin "tenggelam" ke air, bukan lambungnya tembus kelihatan di dalam laut.
+  const zeroY = useMotionValue(0);
+  const wl = custom ? assets.boat.waterline ?? 0.82 : 0.82;
+  const clipPath = useTransform(
+    style?.y ?? zeroY,
+    (v) => `inset(-100vh -50vw calc(${((1 - wl) * 100).toFixed(2)}% + ${Math.max(0, v).toFixed(1)}px) -50vw)`,
+  );
+
   return (
     <motion.div
       className="boat-wrap"
-      style={{ ...style, ...boatVars }}
+      style={{ ...style, ...boatVars, clipPath }}
       initial={{ x: '45vw', opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 2.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
