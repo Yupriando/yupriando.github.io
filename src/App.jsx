@@ -21,10 +21,10 @@ export default function App() {
   useEffect(() => {
     // pesan rahasia untuk sesama developer yang membuka DevTools 👀
     console.log(
-      '%c><(((°>  Halo, developer!',
+      '%c><(((°>  Hello, developer!',
       'font: 600 16px monospace; color:#5ce1e6; background:#04142c; padding:6px 10px; border-radius:6px'
     );
-    console.log('%cKamu menemukan ikan di console. Mau ngobrol? Scroll ke dasar laut 🌊', 'color:#9db8cc');
+    console.log('%cYou found a fish in the console. Want to chat? Scroll down to the seafloor 🌊', 'color:#9db8cc');
   }, []);
 
   return (

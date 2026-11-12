@@ -5,7 +5,17 @@ import useTyping from '../hooks/useTyping';
 import { createSky } from '../ocean/sky';
 import { useToast } from './Toast';
 import Boat from './Boat';
+import { assets } from '../assets';
+import { assetUrl } from '../ocean/images';
 import '../styles/hero.css';
+
+// Langit dari gambar sendiri (src/assets.js → sky). null = langit senja bawaan.
+const SKY = assets.sky?.src ? assets.sky : null;
+const skyStyle = SKY && {
+  '--sky-img': `url("${assetUrl(SKY.src)}")`,
+  '--sky-img-small': `url("${assetUrl(SKY.srcSmall || SKY.src)}")`,
+  '--sun-x': `${(SKY.sunX ?? 0.84) * 100}%`,
+};
 
 const ease = [0.22, 1, 0.36, 1];
 const fadeUp = (delay) => ({
@@ -60,21 +70,25 @@ export default function Hero() {
   const letters = Array.from(profile.name);
 
   return (
-    <section className="hero" id="top" ref={ref}>
+    <section className={`hero${SKY ? ' has-sky-image' : ''}`} id="top" ref={ref} style={skyStyle || undefined}>
       <div className="hero-bg" aria-hidden="true">
-        <div className="sky">
-          <Stars />
-          <motion.div className="sun" style={{ y: sunY }} />
-          <div className="cloud c1" />
-          <div className="cloud c2" />
-          <div className="cloud c3" />
-          {['g1', 'g2', 'g3'].map((g) => (
-            <div key={g} className={`gull ${g}`}>
-              <svg viewBox="0 0 24 10">
-                <path d="M0 6 Q6 0 12 6 Q18 0 24 6" />
-              </svg>
-            </div>
-          ))}
+        <div className={`sky${SKY ? ' sky-image' : ''}`}>
+          {!SKY && (
+            <>
+              <Stars />
+              <motion.div className="sun" style={{ y: sunY }} />
+              <div className="cloud c1" />
+              <div className="cloud c2" />
+              <div className="cloud c3" />
+              {['g1', 'g2', 'g3'].map((g) => (
+                <div key={g} className={`gull ${g}`}>
+                  <svg viewBox="0 0 24 10">
+                    <path d="M0 6 Q6 0 12 6 Q18 0 24 6" />
+                  </svg>
+                </div>
+              ))}
+            </>
+          )}
           <motion.div className="sky-dim" style={{ opacity: skyDim }} />
         </div>
         <div className="sea">
@@ -89,7 +103,7 @@ export default function Hero() {
 
       <motion.div className="hero-content" style={{ y: textY, opacity: textOpacity }}>
         <motion.p className="hero-greet mono" {...fadeUp(0.4)}>
-          <span className="prompt">&gt;</span> Halo, salam kenal 👋 aku
+          <span className="prompt">&gt;</span> Hi there 👋 I'm
         </motion.p>
 
         <h1 className="hero-name" aria-label={profile.name}>
@@ -116,11 +130,11 @@ export default function Hero() {
           {profile.heroDesc}
         </motion.p>
         <motion.div className="hero-cta" {...fadeUp(1.6)}>
-          <motion.a className="btn btn-primary" href="#tentang" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
-            Mulai Menyelam ↓
+          <motion.a className="btn btn-primary" href="#about" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+            Start Diving ↓
           </motion.a>
-          <motion.a className="btn btn-ghost" href="#kontak" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
-            Hubungi Aku
+          <motion.a className="btn btn-ghost" href="#contact" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+            Contact Me
           </motion.a>
         </motion.div>
       </motion.div>
@@ -129,11 +143,11 @@ export default function Hero() {
 
       <div className="wave wave-front" aria-hidden="true" />
 
-      <motion.a href="#tentang" className="scroll-hint" style={{ opacity: hintOpacity }} aria-label="Scroll untuk menyelam">
+      <motion.a href="#about" className="scroll-hint" style={{ opacity: hintOpacity }} aria-label="Scroll to dive">
         <span className="mouse">
           <span />
         </span>
-        <span className="mono">scroll untuk menyelam</span>
+        <span className="mono">scroll to dive</span>
       </motion.a>
     </section>
   );

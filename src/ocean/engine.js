@@ -12,8 +12,30 @@
 import { getDepth, getSurfaceY } from '../depth';
 import { SPECIES, ZONE_FISH, ZONE_JELLY, SOLO, zoneIndex, applyFishAssets } from './species';
 import { drawFish, drawFishGlow, drawWhale, drawManta } from './draw';
-import { airFish } from './shared';
 import { LITE, canvasDPR } from '../perf';
+import { loadImage, isReady, isBroken } from './images';
+import { assets } from '../assets';
+
+// Gambar ubur-ubur sendiri (src/assets.js → jellies), dikelompokkan per zona
+const JELLY_ITEMS = (assets.jellies?.items || [])
+  .filter((it) => it?.src)
+  .map((it) => ({ ...it, img: loadImage(it.src), zones: it.zones || [0, 1, 2, 3] }));
+// kail + umpan cacing (src/assets.js → hook), kosong = kail garis bawaan
+const HOOK_IMG = assets.hook?.src ? loadImage(assets.hook.src) : null;
+const HOOK_H = assets.hook?.height || 30;
+const HOOK_EYE = assets.hook?.eye || [0.78, 0.02];
+
+// pelet makanan ikan (src/assets.js → food), kosong = titik coklat bawaan
+const FOOD_IMG = assets.food?.src ? loadImage(assets.food.src) : null;
+const FOOD_SIZE = assets.food?.size || 7;
+
+const pickJellyImage = (z) => {
+  const list = JELLY_ITEMS.filter((it) => it.zones.includes(z) && !isBroken(it.img));
+  if (!list.length) return null;
+  // replaceDefault: false → kadang tetap pakai ubur-ubur bawaan
+  if (!assets.jellies?.replaceDefault && Math.random() < 1 / (list.length + 1)) return null;
+  return list[Math.floor(Math.random() * list.length)];
+};
 
 const TAU = Math.PI * 2;
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -22,21 +44,6 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 
 const CODE_CHARS = ['0', '1', '{}', '</>', ';', '()', '&&', '#', '=>', '[]'];
-
-// Teriakan ikan saat terbang di udara
-const AIR_QUOTES = [
-  'Wiii~! 🎢',
-  'Aku bisa terbang!',
-  'Tolooong!! 😱',
-  '404: air not found',
-  'Yippee! ✨',
-  'Airnya manaaa?',
-  'sudo turunin aku',
-  'Ini bukan bug, ini fitur!',
-  'Weee~',
-  'Aaaaa!',
-];
-const GRAVITY = 0.38;
 
 // Elemen yang klik/sentuhnya tidak boleh diganggu kanvas
 const BLOCK_SELECTOR = 'a, button, input, textarea, select, label, .nav, .glass, .hero-content, .boat-wrap, .catch-badge';
@@ -54,7 +61,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   let W = 0, H = 0, DPR = 1, raf = 0, last = 0, time = 0;
   let surf = 0, depth = 0, zone = 0, spawnTimer = 0, lastScroll = window.scrollY;
   let grabbed = null, justDragged = false, hasMouse = false;
-  let bugs = 0, catches = 0, bites = 0, toldGrab = false, toldFeed = false, toldFly = false;
+  let bugs = 0, catches = 0, bites = 0, toldGrab = false, toldFeed = false;
 
   const pointer = { x: -999, y: -999, vx: 0, vy: 0, t: 0, active: false };
   const fishes = [], jellies = [], bubbles = [], foods = [], snow = [], drops = [], flights = [];
@@ -92,68 +99,17 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       this.leaving = false;
       this.dead = false;
       this.thrown = 0; // sisa waktu meluncur setelah dilempar
-      this.airborne = false; // sedang terbang di atas permukaan
-      this.spin = 0;
-      this.airT = 0;
-      this.quote = '';
     }
 
     get hitR() {
       return this.size * (this.sp.hit || 0.6);
     }
 
-    // keluar dari air → terbang mengikuti gravitasi
-    launch() {
-      this.airborne = true;
-      this.thrown = 0;
-      this.airT = 0;
-      this.spin = rand(0.12, 0.3) * (Math.random() < 0.5 ? -1 : 1) + this.vx * 0.01;
-      this.quote = pick(AIR_QUOTES);
-      airFish.add(this);
-      if (surf > -20 && surf < H) splash(this.x, surf, 12);
-      if (!toldFly) {
-        toldFly = true;
-        toast('🚀 Ikan terbang! Lempar lebih tinggi, siapa tahu disambar burung camar 🐦');
-      }
-    }
-
-    // jatuh kembali ke laut
-    splashdown() {
-      this.airborne = false;
-      airFish.delete(this);
-      this.vx *= 0.5;
-      this.vy *= 0.3;
-      this.thrown = 30;
-      this.panic = 1;
-      if (this.vx) this.dir = Math.sign(this.vx);
-      splash(this.x, surf, 16);
-      for (let i = 0; i < 6; i++) bubbles.push(new Bubble(this.x + rand(-10, 10), surf + rand(8, 30), rand(2, 4.5)));
-    }
-
     update(dt) {
       const sp = this.sp;
       if (sp.special === 'puffer') {
         const near = pointer.active && Math.hypot(pointer.x - this.x, pointer.y - this.y) < 100;
-        this.inflate = lerp(this.inflate, this.grabbed || this.hooked || this.airborne || near ? 1 : 0, 0.08 * dt);
-      }
-      if (this.stolen) {
-        // disambar burung camar
-        this.dead = true;
-        airFish.delete(this);
-        return;
-      }
-      if (this.airborne) {
-        this.vy += GRAVITY * dt;
-        this.vx *= Math.pow(0.995, dt);
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
-        this.angle += this.spin * dt;
-        this.phase += 0.7 * dt;
-        this.airT += dt;
-        if (this.x < -this.size * 2) this.x = W + this.size;
-        else if (this.x > W + this.size * 2) this.x = -this.size;
-        if (this.vy > 0 && this.y > surf) this.splashdown();
-        return;
+        this.inflate = lerp(this.inflate, this.grabbed || this.hooked || near ? 1 : 0, 0.08 * dt);
       }
       if (this.thrown > 0 && !this.grabbed) {
         // meluncur karena dilempar (hambatan air memperlambat)
@@ -165,9 +121,11 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
         this.phase += 0.6 * dt;
         const ta = Math.atan2(this.vy, this.vx);
         this.angle += Math.atan2(Math.sin(ta - this.angle), Math.cos(ta - this.angle)) * Math.min(1, 0.25 * dt);
-        if (this.y < surf && this.vy < -1.5) {
-          this.launch();
-          return;
+        // ikan tidak keluar dari air: memantul pelan di bawah permukaan
+        const ceil = surf + this.size * 0.5;
+        if (this.y < ceil) {
+          this.y = ceil;
+          if (this.vy < 0) this.vy *= -0.35;
         }
         if (this.y > H - 10) {
           this.y = H - 10;
@@ -180,7 +138,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       }
       if (this.grabbed) {
         this.x = lerp(this.x, pointer.x, 0.4);
-        this.y = lerp(this.y, pointer.y, 0.4);
+        // ikan yang dipegang tetap di dalam air
+        this.y = Math.max(lerp(this.y, pointer.y, 0.4), surf + this.size * 0.5);
         if (!sp.upright) {
           const face = Math.cos(this.angle) >= 0 ? 0 : Math.PI;
           this.angle = face + Math.sin(time * 0.45) * 0.35; // meronta-ronta
@@ -312,6 +271,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       this.phase = Math.random() * TAU;
       this.alpha = onScreen ? 1 : 0;
       this.hue = z === 0 ? rand(190, 220) : z === 1 ? rand(290, 340) : rand(170, 200);
+      this.art = pickJellyImage(z);
+      if (this.art?.hue != null) this.hue = this.art.hue; // warna cahaya di laut dalam
       this.drift = rand(-0.2, 0.2);
       this.vx = 0;
       this.vy = 0;
@@ -360,6 +321,20 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       const p = Math.sin(this.phase);
       const sx = 1 + p * 0.08, sy = 1 - p * 0.1;
       const deep = this.zone >= 2;
+      if (this.art && isReady(this.art.img)) {
+        // ubur-ubur dari gambar: payung berdenyut (melebar-memendek), sedikit bergoyang
+        const img = this.art.img;
+        const w = s * 2.3 * (this.art.scale || 1);
+        const h = (w * img.naturalHeight) / img.naturalWidth;
+        c.save();
+        c.translate(this.x, this.y - s * 0.75); // titik (0,0) kira-kira di puncak payung
+        c.rotate(Math.sin(this.phase * 0.5) * 0.06);
+        c.scale(sx, sy);
+        c.globalAlpha = Math.max(0, this.alpha) * (deep ? 0.95 : 0.88);
+        c.drawImage(img, -w / 2, 0, w, h);
+        c.restore();
+        return;
+      }
       c.save();
       c.translate(this.x, this.y);
       c.globalAlpha = Math.max(0, this.alpha) * (deep ? 0.9 : 0.75);
@@ -477,7 +452,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     const above = y < surf;
     for (let i = fishes.length - 1; i >= 0; i--) {
       const f = fishes[i];
-      if (above && !f.airborne) continue; // di atas air hanya ikan yang sedang terbang
+      if (above) break; // di atas air tidak ada ikan yang bisa dipegang
       if (!f.dead && !f.hooked && Math.hypot(f.x - x, f.y - y) < f.hitR + tol) return f;
     }
     if (above) return null;
@@ -513,12 +488,12 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
   function feed(x, y) {
     for (let i = 0; i < 5; i++) {
-      foods.push({ x: x + rand(-14, 14), y: y + rand(-8, 8), vy: rand(0.25, 0.5), t: 0, ph: Math.random() * TAU, dead: false });
+      foods.push({ x: x + rand(-14, 14), y: y + rand(-8, 8), vy: rand(0.25, 0.5), t: 0, ph: Math.random() * TAU, sz: rand(0.8, 1.2), dead: false });
     }
     burst(x, y, 5);
     if (!toldFeed) {
       toldFeed = true;
-      toast('🍤 Makanan ikan dijatuhkan! Lihat mereka berebut~');
+      toast('🍤 Fish food dropped! Watch them scramble for it~');
     }
   }
 
@@ -532,7 +507,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     bites++;
     splash(hook.bobX, surf, 6);
     emit('bite', { name: f.sp.name });
-    if (bites <= 2) toast('🎣 Strike! Klik / tarik kailnya ke atas untuk menarik ikan!');
+    if (bites <= 2) toast('🎣 Strike! Click / drag the hook upward to reel in the fish!');
   }
 
   function escape() {
@@ -566,7 +541,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       f.curious = false;
       f.y = surf + f.size;
       f.vy = 3;
-      const msg = f.type === 'turtle' ? '🐢 Penyu itu dilindungi! Dilepas lagi ya~' : '🦈 Hiu dilindungi! Dilepas lagi, hati-hati~';
+      const msg = f.type === 'turtle' ? '🐢 Sea turtles are protected! Letting it go~' : '🦈 Sharks are protected! Letting it go, careful~';
       toast(msg);
       emit('release', { name: f.sp.name, msg });
       return;
@@ -589,12 +564,12 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     const f = fl.f;
     if (f.type === 'ascii') {
       bugs++;
-      toast(`🐛 Dapat bug! Langsung di-fix ✅ (total bug: ${bugs})`);
+      toast(`🐛 Caught a bug! Fixed it right away ✅ (bugs fixed: ${bugs})`);
       emit('bug', { bugs, catches });
     } else {
       catches++;
-      const rare = f.sp.rare ? ' ✨ Langka!' : '';
-      toast(`🎣 Dapat ${f.sp.name}!${rare}`);
+      const rare = f.sp.rare ? ' ✨ Rare!' : '';
+      toast(`🎣 Caught a ${f.sp.name}!${rare}`);
       emit('catch', { name: f.sp.name, catches, bugs });
     }
   }
@@ -670,6 +645,21 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     c.moveTo(hook.bobX, surf);
     c.lineTo(x, y - 10);
     c.stroke();
+    if (isReady(HOOK_IMG)) {
+      // kail + cacing dari gambar: mata kail tepat di ujung tali, bergoyang pelan terbawa arus
+      const h = HOOK_H;
+      const w = (h * HOOK_IMG.naturalWidth) / HOOK_IMG.naturalHeight;
+      c.save();
+      c.translate(x, y - 10);
+      c.rotate(Math.sin(time * 0.05) * 0.12 + (hook.caught ? Math.sin(time * 0.4) * 0.15 : 0));
+      c.drawImage(HOOK_IMG, -HOOK_EYE[0] * w, -HOOK_EYE[1] * h, w, h);
+      c.restore();
+    } else drawHookShape(c, x, y);
+    drawHookHint(c, x, y);
+  }
+
+  // kail bawaan (garis) + cacing, dipakai kalau gambar kail tidak ada
+  function drawHookShape(c, x, y) {
     // kail
     c.strokeStyle = '#dfe6ea';
     c.lineWidth = 2;
@@ -693,16 +683,19 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       }
       c.stroke();
     }
-    // petunjuk
+  }
+
+  // petunjuk di samping kail
+  function drawHookHint(c, x, y) {
     c.font = '600 12px "JetBrains Mono", monospace';
     c.textAlign = 'left';
     c.textBaseline = 'middle';
     if (hook.caught && !hook.reeling) {
       c.fillStyle = Math.sin(time * 0.2) > 0 ? '#ffd166' : '#fff';
-      c.fillText('klik kail → tarik! 🎣', x + 16, y);
+      c.fillText('click the hook → reel in! 🎣', x + 16, y);
     } else if (!hook.used) {
       c.fillStyle = 'rgba(255,255,255,.85)';
-      c.fillText('← tarik kailku', x + 16 + Math.sin(time * 0.08) * 3, y);
+      c.fillText('← drag my hook', x + 16 + Math.sin(time * 0.08) * 3, y);
     }
   }
 
@@ -735,10 +728,6 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     const top = Math.max(surf, 0);
     for (const f of fishes) {
       if (f.grabbed || f.hooked) continue;
-      if (f.airborne) {
-        f.y -= sd; // ikan di udara ikut bergerak bersama permukaan laut
-        continue;
-      }
       f.y -= sd * 0.35;
       if (f.y < top - 80 && surf <= 0) f.y = H + 40;
       else if (f.y > H + 80) f.y = Math.max(top + f.size, -40);
@@ -801,23 +790,6 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     }
   }
 
-  const aboveWater = (f) => f.airborne || (f.grabbed && f.y < surf);
-
-  function drawQuote(f) {
-    const a = clamp(Math.min(f.airT / 8, (80 - f.airT) / 15), 0, 1);
-    ctx.globalAlpha = a;
-    ctx.font = '700 13px "Space Grotesk", system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = 'rgba(4,20,44,.85)';
-    const y = f.y - f.size * 0.7 - 8;
-    ctx.strokeText(f.quote, f.x, y);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(f.quote, f.x, y);
-    ctx.globalAlpha = 1;
-  }
-
   function draw() {
     ctx.clearRect(0, 0, W, H);
     const top = Math.max(surf, 0);
@@ -840,14 +812,25 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
       for (const j of jellies) j.draw(ctx);
       ctx.fillStyle = '#d49a5e';
+      const pellet = isReady(FOOD_IMG) ? FOOD_IMG : null;
       for (const fd of foods) {
         ctx.globalAlpha = clamp(1 - fd.t / 600, 0, 1);
-        ctx.beginPath();
-        ctx.arc(fd.x, fd.y, 2.5, 0, TAU);
-        ctx.fill();
+        if (pellet) {
+          // pelet dari gambar: berputar pelan saat tenggelam
+          const s = FOOD_SIZE * fd.sz;
+          ctx.save();
+          ctx.translate(fd.x, fd.y);
+          ctx.rotate(fd.ph * 0.6);
+          ctx.drawImage(pellet, -s / 2, -s / 2, s, s);
+          ctx.restore();
+        } else {
+          ctx.beginPath();
+          ctx.arc(fd.x, fd.y, 2.5, 0, TAU);
+          ctx.fill();
+        }
       }
       ctx.globalAlpha = 1;
-      for (const f of fishes) if (!aboveWater(f)) drawFish(ctx, f);
+      for (const f of fishes) drawFish(ctx, f);
       drawHookUnder(ctx);
       for (const b of bubbles) b.draw(ctx);
 
@@ -867,7 +850,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       // pass cahaya (bioluminesensi)
       ctx.globalCompositeOperation = 'lighter';
       for (const j of jellies) j.glow(ctx);
-      for (const f of fishes) if (!aboveWater(f)) drawFishGlow(ctx, f, time);
+      for (const f of fishes) drawFishGlow(ctx, f, time);
       ctx.globalCompositeOperation = 'source-over';
       ctx.restore();
     }
@@ -877,13 +860,6 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     for (const fl of flights) {
       drawFish(ctx, fl.f);
       drawFishGlow(ctx, fl.f, time);
-    }
-    // ikan yang dilempar ke udara (atau dipegang di atas air)
-    for (const f of fishes) {
-      if (!aboveWater(f)) continue;
-      drawFish(ctx, f);
-      drawFishGlow(ctx, f, time);
-      if (f.airborne && f.airT < 80) drawQuote(f);
     }
     ctx.fillStyle = 'rgba(220,245,255,.85)';
     for (const d of drops) {
@@ -992,7 +968,6 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       }
     }
     sweep(fishes); sweep(jellies); sweep(bubbles); sweep(foods); sweep(drops); sweep(flights);
-    for (const f of airFish) if (f.dead || !f.airborne) airFish.delete(f);
 
     draw();
   }
@@ -1058,20 +1033,15 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     e.preventDefault();
     grabbed = hit;
     hit.grabbed = true;
-    if (hit instanceof Fish) {
-      // ditangkap di udara / saat meluncur
-      hit.airborne = false;
-      hit.thrown = 0;
-      airFish.delete(hit);
-    }
+    if (hit instanceof Fish) hit.thrown = 0; // ditangkap saat masih meluncur
     root.classList.add('grabbing');
     if (hit instanceof Fish && hit.type === 'ascii') {
-      toast('🐛 Bug ketangkap! Lepaskan untuk mem-fix-nya…');
+      toast('🐛 Bug caught! Let go of it to fix it…');
     } else if (hit instanceof Fish && hit.type === 'puffer') {
-      toast('🐡 Ikan buntalnya menggembung karena kaget!');
+      toast('🐡 The pufferfish puffed up in surprise!');
     } else if (!toldGrab) {
       toldGrab = true;
-      toast(hit instanceof Jelly ? '🪼 Hati-hati, ubur-ubur bisa nyetrum! ⚡' : '🐟 Hehe, ikannya geli! Coba lempar kencang ke atas laut 🚀');
+      toast(hit instanceof Jelly ? '🪼 Careful, jellyfish can sting! ⚡' : '🐟 Hehe, that tickles! Drag and let go to toss it 🌊');
     }
   }
 
@@ -1102,8 +1072,6 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
         burst(f.x, f.y, 12, true);
         toast(`✅ Bug #${bugs} fixed! git commit -m "fix: bug ${bugs}"`);
         emit('bug', { bugs, catches });
-      } else if (f.y < surf) {
-        f.launch(); // dilepas di atas air → langsung terbang/jatuh
       } else {
         f.thrown = 45;
       }
@@ -1186,6 +1154,5 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     window.removeEventListener('touchmove', onTouchMove);
     window.removeEventListener('ocean:bubbles', onBubbles);
     root.classList.remove('can-grab', 'grabbing');
-    airFish.clear();
   };
 }

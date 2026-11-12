@@ -10,6 +10,11 @@
   -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
 }
+/* tanah bertekstur: pudar hanya di ujung paling bawah supaya batu terlihat padat, tidak melayang */
+.reef-textured {
+  -webkit-mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
+}
 .reef svg {
   position: absolute;
   inset: 0;
@@ -109,26 +114,37 @@
   }
 }
 
-/* ---------- ikan badut di anemon ---------- */
-.nemo {
-  transition: transform 0.5s cubic-bezier(0.3, 1.4, 0.5, 1), opacity 0.4s;
-}
-.nemo-body {
-  animation: nemo 2.4s ease-in-out infinite;
-}
-@keyframes nemo {
-  50% {
-    transform: translate(3px, -3px);
-  }
-}
-.reef-item.hiding .nemo {
-  transform: translateY(18px) scale(0.5);
-  opacity: 0;
-}
-
 /* ---------- laut dalam ---------- */
 .glow-soft {
   filter: drop-shadow(0 0 3px currentColor);
+}
+/* karang bergambar yang bercahaya (src/assets.js → coral.items[].glow) */
+.coral-aura {
+  animation: coral-pulse 3.2s ease-in-out infinite alternate;
+}
+.reef-front > g:nth-child(2n) .coral-aura {
+  animation-duration: 4.1s;
+  animation-delay: -1.3s;
+}
+.coral-glow image {
+  filter: drop-shadow(0 0 4px rgba(var(--glow), 0.75));
+}
+@keyframes coral-pulse {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* HP: tanpa drop-shadow (mahal), pendaran tetap ada */
+html.lite .coral-glow image {
+  filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .coral-aura {
+    animation: none;
+  }
 }
 .reef .bio,
 .floor-svg .bio {

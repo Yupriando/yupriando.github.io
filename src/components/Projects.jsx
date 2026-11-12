@@ -1,19 +1,43 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { projectFilters, projects } from '../data';
+import { github, projectFilters } from '../data';
+import useGithubProjects from '../hooks/useGithubProjects';
 import Reveal from './ui/Reveal';
 import SectionHead from './ui/SectionHead';
 import TiltCard from './ui/TiltCard';
+import DemoModal from './DemoModal';
+import { assetUrl } from '../ocean/images';
 import '../styles/projects.css';
+
+const TRY_LABEL = {
+  app: '▶ Try It Live',
+  api: '▶ Try the API',
+  design: '🎨 View Design',
+};
+
+const STATUS = {
+  loading: 'fetching repos from GitHub…',
+  live: 'live data from GitHub',
+  offline: 'GitHub is unreachable, showing saved data',
+};
 
 export default function Projects() {
   const [filter, setFilter] = useState('all');
-  const shown = projects.filter((p) => filter === 'all' || p.cat === filter);
+  const [demo, setDemo] = useState(null);
+  const { list, status } = useGithubProjects();
+  const closeDemo = useCallback(() => setDemo(null), []);
+
+  const shown = list.filter((p) => filter === 'all' || (filter === 'live' ? p.demo : p.cat === filter));
+
+  const openDemo = (p) => {
+    if (p.embed === false) window.open(p.demo, '_blank', 'noopener');
+    else setDemo(p);
+  };
 
   return (
-    <section className="zone" id="proyek">
+    <section className="zone" id="projects">
       <div className="container">
-        <SectionHead idx="03" zone="zona_batipelagik · 4.000 m" note="hanya cahaya dari makhluknya sendiri" title="Proyek" />
+        <SectionHead idx="03" zone="bathypelagic_zone · 4,000 m" note="the only light comes from the creatures themselves" title="Projects" />
 
         <Reveal className="filters">
           {projectFilters.map(([key, label]) => (
@@ -26,11 +50,18 @@ export default function Projects() {
           ))}
         </Reveal>
 
+        <p className={`gh-status mono small ${status}`}>
+          <span className="gh-dot" /> {STATUS[status]} ·{' '}
+          <a href={`https://github.com/${github.username}`} target="_blank" rel="noopener">
+            @{github.username}
+          </a>
+        </p>
+
         <motion.div className="projects-grid" layout>
           <AnimatePresence mode="popLayout">
             {shown.map((p, i) => (
               <motion.article
-                key={p.title}
+                key={p.repo}
                 layout
                 className="project-item"
                 initial={{ opacity: 0, y: 40, scale: 0.95 }}
@@ -40,13 +71,15 @@ export default function Projects() {
                 transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1], layout: { type: 'spring', stiffness: 300, damping: 30 } }}
               >
                 <TiltCard className="glass project">
-                  <div className={`project-media ${p.theme}`}>
+                  <div className={`project-media ${p.theme}${p.thumb ? ' has-thumb' : ''}`}>
+                    {p.thumb && <img className="project-thumb" src={assetUrl(p.thumb)} alt={`Screenshot of ${p.title}`} loading="lazy" />}
                     <span className="win-dots">
                       <i />
                       <i />
                       <i />
                     </span>
-                    <span className="emoji">{p.emoji}</span>
+                    {p.demo && <span className="live-badge mono">● LIVE</span>}
+                    {!p.thumb && <span className="emoji">{p.emoji}</span>}
                     <span className="media-label mono">{p.label}</span>
                   </div>
                   <div className="project-body">
@@ -58,11 +91,14 @@ export default function Projects() {
                       ))}
                     </ul>
                     <div className="project-links">
-                      {p.links.map(([label, href]) => (
-                        <a key={label} href={href} {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener' } : {})}>
-                          {label} ↗
-                        </a>
-                      ))}
+                      {p.demo && (
+                        <button className="btn btn-primary btn-try" onClick={() => openDemo(p)}>
+                          {TRY_LABEL[p.demoType] || TRY_LABEL.app}
+                        </button>
+                      )}
+                      <a href={p.url} target="_blank" rel="noopener">
+                        Code ↗
+                      </a>
                     </div>
                   </div>
                 </TiltCard>
@@ -71,6 +107,8 @@ export default function Projects() {
           </AnimatePresence>
         </motion.div>
       </div>
+
+      <DemoModal project={demo} onClose={closeDemo} />
     </section>
   );
 }

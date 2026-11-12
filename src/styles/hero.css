@@ -25,6 +25,47 @@
   overflow: hidden;
   background: linear-gradient(180deg, #0b1d3a 0%, #23386e 32%, #6a4c8c 58%, #e87a7a 82%, #ffb87a 100%);
 }
+/* langit dari gambar (src/assets.js → sky). Posisi X = posisi matahari, jadi matahari
+   selalu berada di --sun-x berapa pun lebar layarnya. */
+.sky.sky-image {
+  background: #7fc3f2 var(--sky-img) var(--sun-x) 100% / cover no-repeat;
+}
+@media (max-width: 900px) {
+  .sky.sky-image {
+    background-image: var(--sky-img-small);
+  }
+  /* di HP teks berada di tengah, jadi bayangannya juga di tengah */
+  .sky.sky-image::before {
+    background: radial-gradient(ellipse 90% 55% at 50% 32%, rgba(6, 28, 66, 0.55), rgba(6, 28, 66, 0.2) 60%, transparent 85%) !important;
+  }
+}
+.has-sky-image .sun-reflect {
+  left: var(--sun-x);
+  background: repeating-linear-gradient(180deg, rgba(255, 244, 200, 0.7) 0 3px, transparent 3px 12px);
+}
+/* teks putih tetap terbaca di langit siang yang terang: bayangan lembut di sisi kiri atas */
+.sky.sky-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 75% at 12% 40%, rgba(6, 28, 66, 0.6), rgba(6, 28, 66, 0.25) 55%, transparent 80%);
+  pointer-events: none;
+}
+.has-sky-image .hero-content {
+  text-shadow: 0 2px 18px rgba(4, 24, 56, 0.55);
+}
+/* laut siang: lebih cerah di permukaan, menyatu ke biru dalam di bawah */
+.has-sky-image .sea {
+  background: linear-gradient(180deg, #4f9ccc 0%, #2f82b6 30%, #1c6e9c 100%);
+}
+.has-sky-image .wave.w1,
+.has-sky-image .wave-front {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 60' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20 V60 H0Z' fill='%234f9ccc'/%3E%3C/svg%3E");
+}
+.has-sky-image .wave.w2 {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 60' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C120 4 240 4 360 20 C480 36 600 36 720 20 V60 H0Z' fill='%23a3d4ef'/%3E%3C/svg%3E");
+}
+
 .sky-dim {
   position: absolute;
   inset: 0;
@@ -277,8 +318,42 @@
   pointer-events: none;
   transition: left 0.4s cubic-bezier(0.3, 1.6, 0.5, 1), top 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
-.boat-btn.cheer .boat-custom img {
+.boat-btn.cheer .boat-custom .boat-hull:only-of-type {
   animation: cheer 0.45s ease-in-out 3;
+}
+/* lapisan pemancing & anjing (di belakang lambung, posisi dari src/assets.js) */
+.boat-custom .boat-hull {
+  position: relative;
+}
+.boat-custom .boat-fisher,
+.boat-custom .boat-dog {
+  position: absolute;
+  height: auto;
+}
+.boat-custom .boat-fisher {
+  transition: transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.boat-btn.cheer .boat-fisher,
+.boat-btn.cheer .boat-dog {
+  animation: cheer 0.45s ease-in-out 3;
+}
+.boat-btn.cheer .boat-dog {
+  animation-delay: 0.12s;
+}
+/* anjing bernapas pelan */
+.boat-custom .boat-dog {
+  transform-origin: 50% 100%;
+  animation: dog-breath 3.2s ease-in-out infinite;
+}
+@keyframes dog-breath {
+  50% {
+    transform: scaleY(1.015);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .boat-custom .boat-dog {
+    animation: none;
+  }
 }
 
 /* kanvas burung camar */

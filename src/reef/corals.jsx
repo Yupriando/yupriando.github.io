@@ -153,8 +153,8 @@ export function Table({ color, light }) {
   );
 }
 
-/* Anemon (bisa ada ikan badut yang bersembunyi) */
-export function Anemone({ seed, color, tip, base, nemo }) {
+/* Anemon */
+export function Anemone({ seed, color, tip, base }) {
   const tents = useMemo(() => {
     const r = mulberry32(seed);
     const n = 16 + ((r() * 7) | 0);
@@ -180,19 +180,6 @@ export function Anemone({ seed, color, tip, base, nemo }) {
         ))}
       </g>
       <path d="M-14 0 Q-16 -6 -12 -10 L12 -10 Q16 -6 14 0 Z" fill={base} />
-      {nemo && (
-        <g transform="translate(0 -26)">
-        <g className="nemo">
-          <g className="nemo-body">
-            <path d="M-7 0 l-5 -4 v8z" fill="#ff7a2f" />
-            <ellipse rx="8" ry="4.6" fill="#ff7a2f" />
-            <rect x="-2" y="-4.6" width="2.4" height="9.2" fill="#fff" />
-            <rect x="3.6" y="-4" width="1.8" height="8" fill="#fff" />
-            <circle cx="5.6" cy="-1.2" r="1.1" fill="#111" />
-          </g>
-        </g>
-        </g>
-      )}
     </g>
   );
 }

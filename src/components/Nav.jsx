@@ -4,11 +4,11 @@ import { profile } from '../data';
 import '../styles/nav.css';
 
 const LINKS = [
-  ['tentang', 'Tentang', '200 m'],
-  ['keahlian', 'Keahlian', '1.000 m'],
-  ['proyek', 'Proyek', '4.000 m'],
-  ['pengalaman', 'Pengalaman', '6.000 m'],
-  ['kontak', 'Kontak', '10.994 m'],
+  ['about', 'About', '200 m'],
+  ['skills', 'Skills', '1,000 m'],
+  ['projects', 'Projects', '4,000 m'],
+  ['experience', 'Experience', '6,000 m'],
+  ['contact', 'Contact', '10,994 m'],
 ];
 
 export default function Nav() {
@@ -42,14 +42,14 @@ export default function Nav() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
     >
-      <a href="#top" className="nav-logo" aria-label="Kembali ke permukaan" onClick={() => setOpen(false)}>
+      <a href="#top" className="nav-logo" aria-label="Back to the surface" onClick={() => setOpen(false)}>
         <span className="logo-fish mono">&gt;&lt;&gt;</span> {profile.logo}
         <span className="accent">.dev</span>
       </a>
 
       <button
         className="nav-toggle"
-        aria-label={open ? 'Tutup menu' : 'Buka menu'}
+        aria-label={open ? 'Close menu' : 'Open menu'}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >

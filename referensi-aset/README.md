@@ -39,7 +39,7 @@ Semua ikan menghadap **ke kanan**. Frame sudah sejajar, jadi kepala & badan tida
 | `angler` | Ikan Sungut Ganda | palung | 48–66 px | 1.89 |
 | `dumbo` | Gurita Dumbo | palung | 34–44 px | 1.24 |
 | `eel` | Belut Pelikan | palung | 100–130 px | 1.16 |
-| `ascii` | Bug | semua zona dalam | 46–56 px | 1.87 |
+| `ascii` | Bug | semua zona dalam | 32–38 px | 1.87 |
 
 > **`scale`** membuat hasil tracing tampil seukuran ikan bawaan, karena gambar ekspor sudah termasuk ekor & sirip.
 > Untuk `puffer`, ada juga `puffer-menggembung` sebagai referensi. Cukup tracing yang biasa, karena web otomatis memperbesarnya saat menggembung.

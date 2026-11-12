@@ -12,7 +12,7 @@ export default function DepthMeter() {
     () =>
       subscribe(({ depth, progress }) => {
         rootRef.current?.style.setProperty('--p', `${(progress * 100).toFixed(2)}%`);
-        if (valueRef.current) valueRef.current.textContent = Math.round(depth).toLocaleString('id-ID');
+        if (valueRef.current) valueRef.current.textContent = Math.round(depth).toLocaleString('en-US');
         if (zoneRef.current) zoneRef.current.textContent = zoneName(depth);
       }),
     []
@@ -30,7 +30,7 @@ export default function DepthMeter() {
         <strong>
           <span ref={valueRef}>0</span> m
         </strong>
-        <small ref={zoneRef}>Permukaan</small>
+        <small ref={zoneRef}>Surface</small>
       </div>
     </aside>
   );

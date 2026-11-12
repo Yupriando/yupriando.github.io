@@ -76,13 +76,35 @@
     stroke-dashoffset: -156;
   }
 }
+/* keterangan kabel: label kecil di atas kursor, hanya muncul saat kabel disentuh */
 .cable-label {
   position: absolute;
-  left: 5%;
-  bottom: 78px;
+  z-index: 30; /* di atas tombol "Back to the surface" & peti */
+  translate: -50% calc(-100% - 34px); /* terpisah dari transform yang dianimasikan framer-motion */
+  width: max-content;
+  max-width: min(340px, calc(100vw - 32px));
   margin: 0;
-  font-size: 0.7rem;
-  color: rgba(92, 225, 230, 0.6);
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(92, 225, 230, 0.35);
+  background: rgba(4, 14, 30, 0.88);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 14px rgba(92, 225, 230, 0.15);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--accent);
+  pointer-events: none;
+}
+.cable-hit {
+  cursor: help;
+}
+/* denyut data lebih terang saat kabel disentuh (kecepatan tetap, supaya cahayanya tidak meloncat) */
+.cable-pulse {
+  transition: stroke-width 0.3s, filter 0.3s;
+}
+.cable-pulse.hot {
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 7px #5ce1e6);
 }
 
 /* ---------- Peti harta karun ---------- */
@@ -185,6 +207,10 @@
   align-items: center;
   gap: 10px;
   text-align: center;
+  pointer-events: none; /* wadahnya tembus sentuhan supaya kabel di belakangnya bisa disentuh */
+}
+.footer-bottom > * {
+  pointer-events: auto; /* tombol & teks tetap bisa diklik/dipilih */
 }
 .footer-bottom p {
   margin: 0;
@@ -201,9 +227,6 @@
   .chest-area {
     bottom: 150px;
   }
-  .cable-label {
-    bottom: 140px;
-  }
 }
 
 @media (max-width: 640px) {
@@ -214,9 +237,134 @@
     right: 8%;
     bottom: 190px;
   }
-  .cable-label {
-    left: 16px;
-    bottom: 176px;
-    max-width: 55%;
+}
+
+/* ---------- peti dari gambar (src/assets.js → seafloor.chest) ---------- */
+.chest-area-img {
+  width: clamp(120px, 12vw, 170px);
+}
+.chest-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.chest-stack img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+.chest-body {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.55));
+}
+.chest-lid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  /* engsel di kiri-bawah tutup */
+  transform-origin: 6% 100%;
+  transition: transform 0.7s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+/* badan berada tepat di bawah tutup (tinggi tutup = 21.6% lebar) */
+.chest-body {
+  margin-top: 21.6%;
+}
+.chest-inside {
+  position: absolute;
+  left: 0;
+  top: 2%;
+  width: 100%;
+  z-index: 0;
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 0.35s 0.1s;
+}
+.chest-img.open .chest-inside {
+  opacity: 1;
+}
+/* tutup berputar di engsel belakang-atas: dari depan terlihat terangkat & memendek ke belakang */
+.chest-stack {
+  perspective: 520px;
+}
+.chest-img .chest-lid {
+  transform-origin: 50% 6%;
+  transition: transform 0.8s cubic-bezier(0.3, 1.25, 0.5, 1), filter 0.8s;
+}
+.chest-img.open .chest-lid {
+  transform: translateY(-10%) rotateX(72deg);
+  filter: brightness(0.7);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chest-lid {
+    transition: none;
+  }
+}
+
+/* ---------- TV tua (src/assets.js → seafloor.tv) ---------- */
+.tv-text {
+  font-size: 11px;
+  filter: drop-shadow(0 0 3px rgba(57, 255, 136, 0.8));
+}
+.tv-cursor {
+  animation: tv-cursor 1s steps(1) infinite;
+}
+@keyframes tv-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+.tv-flicker {
+  opacity: 0.05;
+  animation: tv-flicker 3.2s steps(1) infinite;
+  pointer-events: none;
+}
+@keyframes tv-flicker {
+  40% { opacity: 0.02; }
+  42% { opacity: 0.09; }
+  44% { opacity: 0.04; }
+  80% { opacity: 0.07; }
+}
+html.lite .tv-text {
+  filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tv-cursor,
+  .tv-flicker {
+    animation: none;
+  }
+}
+
+/* isi peti: kurung kurawal emas & uap kopi */
+.chest-braces {
+  font: 700 15px var(--mono);
+  fill: #ffd23f;
+  filter: drop-shadow(0 0 2.5px rgba(255, 210, 63, 0.9));
+}
+.chest-steam {
+  animation: chest-steam 2.2s ease-in-out infinite;
+}
+@keyframes chest-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(1px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2.5px);
+  }
+}
+.coin-burst span {
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chest-steam {
+    animation: none;
   }
 }

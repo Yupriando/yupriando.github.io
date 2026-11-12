@@ -34,7 +34,7 @@ export default function CatchBadge() {
             🎣
           </motion.span>
           <span>
-            <strong>{stats.catches}</strong> ikan
+            <strong>{stats.catches}</strong> fish
           </span>
           <span className="sep">·</span>
           <span>

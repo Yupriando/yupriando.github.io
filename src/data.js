@@ -6,220 +6,341 @@
  */
 
 export const profile = {
-  name: 'Yupri',
-  logo: 'yupri',
-  title: 'Fullstack Developer · IT Enthusiast',
-  initial: 'Y',
-  photo: null, // contoh: 'foto.jpg' (taruh file di folder public/)
-  email: 'email@kamu.com',
-  cv: 'cv.pdf', // taruh file cv.pdf di folder public/
-  roles: [
-    'Fullstack Developer',
-    'Mahasiswa IT 🎓',
-    'Pecinta Ikan 🐟',
-    'Problem Solver',
-    'Pemancing Bug 🎣',
-  ],
-  heroDesc: 'Lagi santai mancing bug di tengah laut. Mau kenal lebih dalam? Ayo menyelam bareng 🤿',
+  name: "Yupri",
+  logo: "yupri",
+  title: "Software Developer · IT Enthusiast",
+  initial: "Y",
+  photo: "assets/foto-profil.jpg", // versi kecil dari public/assets/foto.jpg (kalau tidak ada, tampil inisial)
+  email: "yupriandoo@gmail.com",
+  cv: "assets/cv.pdf", // file CV ada di public/assets/cv.pdf
+  roles: ["Software Developer", "IT Student", "Problem Solver", "Bug Fisher"],
+  heroDesc:
+    "Just chilling out at sea, fishing for bugs. Want to get to know me better? Dive in with me 🤿",
   facts: [
-    ['📍', 'Indonesia'],
-    ['🎓', 'Teknik Informatika'],
-    ['🐠', 'Penghobi aquascape'],
+    ["📍", "Indonesia"],
+    ["🎓", "Computer Science @ BINUS"],
+    ["🐠", "Aquascape hobbyist"],
   ],
   aboutLead:
-    'Aku developer yang percaya bahwa kode yang baik itu seperti ekosistem laut: rapi, saling terhubung, dan hidup.',
+    "I'm a developer who believes good code is like an ocean ecosystem: tidy, connected, and alive.",
   aboutText:
-    'Sehari-hari aku membangun aplikasi web dari sisi tampilan sampai server. Aku senang memecahkan masalah, belajar teknologi baru, dan membuat sesuatu yang benar-benar dipakai orang. Di luar layar, kamu bisa menemukanku sedang mancing atau merawat akuarium di rumah.',
+    "Day to day, I build software, from web and mobile apps to the backend services behind them. I love solving problems, learning new tech, and making things people actually use.",
   // Ditampilkan sebagai objek JavaScript di kartu kode
   code: [
-    ['nama', 'Yupri'],
-    ['peran', 'Fullstack Developer'],
-    ['lokasi', 'Indonesia 🇮🇩'],
-    ['hobi', ['ngoding', 'mancing', 'aquascape']],
-    ['ikanFavorit', 'Cupang 🐠'],
-    ['bahanBakar', 'kopi ☕'],
-    ['siapKolaborasi', true],
+    ["name", "Yupri"],
+    ["role", "Software Developer"],
+    ["location", "Indonesia 🇮🇩"],
+    ["hobbies", ["coding", "working out"]],
+    ["favoriteFish", "Black Marlin"],
+    ["fuel", "coffee"],
+    ["openToCollab", true],
   ],
   stats: [
-    { value: 3, suffix: '+', label: 'Tahun ngoding' },
-    { value: 20, suffix: '+', label: 'Proyek selesai' },
-    { value: 1200, suffix: '+', label: 'Commit di GitHub' },
-    { text: '∞', label: 'Cangkir kopi' },
+    { value: 2, suffix: "+", label: "Years coding" },
+    { source: "github", suffix: "", label: "Projects shipped" }, // otomatis: jumlah repo di bagian Projects
+    { source: "demos", suffix: "", label: "Live demos" }, // otomatis: proyek yang punya demo (badge LIVE)
+    { text: "∞", label: "Cups of coffee" },
   ],
 };
 
+// Persentase skill baru (TypeScript, Dart, Java, C++, NestJS, REST API, Socket.IO, Supabase, Prisma, Vercel)
+// masih perkiraan dari proyek di GitHub — sesuaikan dengan kemampuanmu.
 export const skillGroups = [
   {
-    icon: '🖥️',
-    name: 'Frontend',
+    wide: true, // lebar penuh, skill dua kolom
+    icon: "💻",
+    name: "Languages",
     items: [
-      ['HTML & CSS', 90],
-      ['JavaScript', 85],
-      ['React', 75],
-      ['Tailwind CSS', 80],
+      ["JavaScript", 70],
+      ["TypeScript", 60],
+      ["Dart", 70],
+      ["Python", 65],
+      ["Java", 55],
+      ["C++", 55],
     ],
   },
   {
-    icon: '⚙️',
-    name: 'Backend',
+    icon: "⚙️",
+    name: "Backend",
     items: [
-      ['Node.js / Express', 75],
-      ['PHP / Laravel', 80],
-      ['Python', 65],
-      ['MySQL / PostgreSQL', 75],
+      ["Node.js / Express", 70],
+      ["NestJS", 60],
+      ["REST API & Swagger", 70],
+      ["Socket.IO", 55],
     ],
   },
   {
-    icon: '🧰',
-    name: 'Tools & Lainnya',
+    icon: "🗄️",
+    name: "Database & Cloud",
     items: [
-      ['Git & GitHub', 85],
-      ['Linux', 70],
-      ['Docker', 55],
-      ['Figma (UI/UX)', 70],
+      ["MySQL", 70],
+      ["PostgreSQL / Supabase", 65],
+      ["Prisma", 55],
+      ["Vercel", 65],
+    ],
+  },
+  {
+    icon: "📱",
+    name: "Mobile & Game",
+    items: [
+      ["Flutter", 75],
+      ["Android Studio", 70],
+      ["Unity (C#)", 60],
+    ],
+  },
+  {
+    icon: "🖥️",
+    name: "Frontend",
+    items: [
+      ["HTML & CSS", 70],
+      ["React", 50],
+    ],
+  },
+  {
+    wide: true, // lebar penuh, skill dua kolom
+    icon: "🧰",
+    name: "Tools & More",
+    items: [
+      ["Git & GitHub", 80],
+      ["Figma (UI/UX)", 75],
     ],
   },
 ];
 
-// Titik di radar sonar: sudut (derajat, 0 = kanan) dan jarak dari pusat (0–1)
+// Titik di radar sonar: sudut (derajat, 0 = kanan) dan jarak dari pusat (0–1). Samakan dengan skillGroups.
 export const sonarBlips = [
-  ['React', -60, 0.55],
-  ['Node.js', -20, 0.8],
-  ['JavaScript', 25, 0.45],
-  ['Laravel', 70, 0.75],
-  ['MySQL', 120, 0.6],
-  ['Git', 165, 0.8],
-  ['Python', 200, 0.4],
-  ['Figma', 245, 0.72],
+  ["React", -60, 0.55],
+  ["Node.js", -20, 0.8],
+  ["JavaScript", 25, 0.45],
+  ["Flutter", 70, 0.75],
+  ["MySQL", 120, 0.6],
+  ["Git", 165, 0.8],
+  ["Python", 200, 0.4],
+  ["Figma", 245, 0.72],
+  ["Unity", 140, 0.32],
+  ["TypeScript", 285, 0.88],
+  ["NestJS", -30, 0.28],
+  ["Supabase", 98, 0.42],
 ];
 
-export const learning = ['TypeScript', 'Next.js', 'Flutter', 'Cloud (AWS)', 'IoT / ESP32'];
+// TypeScript & Flutter dipindah ke kartu skill karena sudah dipakai di proyek
+export const learning = [
+  "Next.js",
+  "Cloud (AWS)",
+  "IoT / ESP32",
+];
 
 export const projectFilters = [
-  ['all', 'Semua'],
-  ['web', 'Web'],
-  ['mobile', 'Mobile'],
-  ['iot', 'IoT'],
-  ['tools', 'Tools'],
+  ["all", "All"],
+  ["live", "▶ Try it live"],
+  ["web", "Web"],
+  ["mobile", "Mobile"],
+  ["backend", "Backend"],
+  ["game", "Game"],
+  ["design", "Design"],
 ];
+
+/*
+ * PROYEK — diambil otomatis dari GitHub saat halaman dibuka.
+ * Repo baru yang belum ada di `projects` tetap muncul (pakai deskripsi & bahasa dari GitHub).
+ * Daftar di bawah dipakai untuk merapikan tampilan + cadangan kalau GitHub tidak bisa diakses.
+ *
+ *   repo     : nama repo persis seperti di GitHub
+ *   demo     : link yang bisa dicoba pengunjung (dibuka di jendela "Coba Langsung")
+ *   demoType : 'app' (aplikasi web) | 'api' (dokumentasi API yang bisa dicoba) | 'design'
+ *   embed    : false kalau situsnya menolak ditampilkan di dalam iframe → langsung buka tab baru
+ *   thumb    : gambar tampilan proyek (16:9, taruh di public/assets/proyek/). Kosong = emoji
+ *   Kalau repo punya "Website" di pengaturan GitHub, itu otomatis dipakai sebagai demo.
+ */
+export const github = {
+  username: "Yupriando",
+  hide: ["yupriando.github.io"], // repo yang tidak ditampilkan
+  brokenDemos: ["https://savely-api.vercel.app"], // link "Website" di GitHub yang sudah mati
+};
 
 export const projects = [
   {
-    title: 'AquaMonitor',
-    cat: 'iot',
-    emoji: '🐠',
-    label: 'aquamonitor.local',
-    theme: 'm1',
-    desc: 'Dashboard real-time untuk memantau suhu, pH, dan kejernihan air akuarium memakai sensor ESP32, lengkap dengan notifikasi ke HP.',
-    tags: ['ESP32', 'React', 'MQTT', 'Firebase'],
-    links: [['Demo', '#'], ['GitHub', '#']],
+    repo: "Hapki-Snap",
+    thumb: "assets/proyek/hapki-snap.webp", // tampilan proyek (16:9)
+    title: "Hapki Snap",
+    cat: "web",
+    emoji: "📸",
+    theme: "m2",
+    desc: "An event photo wall: guests snap photos with color filters, the shots appear instantly on the big screen as a scrolling ticker, and admins moderate everything from a dashboard.",
+    tags: ["HTML", "JavaScript", "Camera"],
+    demo: "https://hapki-snap.vercel.app",
+    demoType: "app",
   },
   {
-    title: 'IkanHias Store',
-    cat: 'web',
-    emoji: '🛒',
-    label: 'ikanhias.store',
-    theme: 'm2',
-    desc: 'Toko online ikan hias dengan keranjang belanja, pembayaran online, dan panel admin untuk mengelola stok serta pesanan.',
-    tags: ['Laravel', 'MySQL', 'Tailwind'],
-    links: [['Demo', '#'], ['GitHub', '#']],
+    repo: "BulkIn",
+    title: "BulkIn",
+    cat: "mobile",
+    emoji: "💪",
+    theme: "m1",
+    desc: "An Android app for bulking programs: log daily meals, calories, protein, and body weight. Just pick a food and enter its weight, and the rest is calculated automatically.",
+    tags: ["Flutter", "Express", "Supabase", "Claude API"],
+    demo: "https://bulk-in.vercel.app/docs",
+    demoType: "api",
   },
   {
-    title: 'PasangSurut',
-    cat: 'mobile',
-    emoji: '🌊',
-    label: 'pasang-surut.apk',
-    theme: 'm3',
-    desc: 'Aplikasi mobile untuk nelayan: info pasang surut, cuaca laut, dan titik mancing favorit yang bisa dibagikan ke teman.',
-    tags: ['Flutter', 'REST API', 'Maps'],
-    links: [['Unduh', '#'], ['GitHub', '#']],
+    repo: "Bebaca",
+    thumb: "assets/proyek/bebaca.webp", // tampilan proyek (16:9)
+    title: "Bebaca",
+    cat: "mobile",
+    emoji: "📖",
+    theme: "m5",
+    desc: "A reading-practice app for kids. Flutter frontend, Node.js + Express backend, with Supabase (Postgres + Auth) as the database.",
+    tags: ["Flutter", "Node.js", "Supabase"],
+    demo: "https://bebaca.vercel.app/docs/",
+    demoType: "api",
   },
   {
-    title: 'Coral CLI',
-    cat: 'tools',
-    emoji: '🪸',
-    label: '$ coral init',
-    theme: 'm4',
-    desc: 'Tool command-line untuk membuat kerangka proyek web dalam hitungan detik: struktur folder, konfigurasi linter, dan template siap pakai.',
-    tags: ['Python', 'CLI', 'Open Source'],
-    links: [['Docs', '#'], ['GitHub', '#']],
+    repo: "NoteNook",
+    title: "NoteNook",
+    cat: "mobile",
+    emoji: "🗒️",
+    theme: "m3",
+    desc: "A cross-platform notes app: create, organize, and manage notes, complete with login, messaging, and media sharing.",
+    tags: ["Flutter", "Express", "MySQL", "Socket.IO", "JWT"],
   },
   {
-    title: 'Sistem Informasi Akademik',
-    cat: 'web',
-    emoji: '📚',
-    label: 'sistem-akademik.id',
-    theme: 'm5',
-    desc: 'Aplikasi web untuk mengelola jadwal, nilai, dan presensi mahasiswa dengan dashboard berbeda untuk admin, dosen, dan mahasiswa.',
-    tags: ['Node.js', 'Express', 'PostgreSQL'],
-    links: [['Demo', '#'], ['GitHub', '#']],
+    repo: "Savely",
+    title: "Savely",
+    cat: "mobile",
+    emoji: "💰",
+    theme: "m4",
+    desc: "A mobile app that helps you manage your savings and spending.",
+    tags: ["Flutter", "Riverpod", "TypeScript", "Supabase"],
   },
   {
-    title: 'Portofolio Bawah Laut',
-    cat: 'web',
-    emoji: '🐟',
-    label: 'yupri.dev',
-    theme: 'm6',
-    desc: 'Website yang sedang kamu selami ini! Dibangun dengan React, Framer Motion, dan Canvas API: ikan yang bisa dipegang dan pengukur kedalaman.',
-    tags: ['React', 'Framer Motion', 'Canvas'],
-    links: [['Ke atas', '#top'], ['GitHub', '#']],
+    repo: "WSpeedrun-Microservices",
+    title: "WSpeedrun Microservices",
+    cat: "backend",
+    emoji: "⏱️",
+    theme: "m6",
+    desc: "A microservices backend for speedrun submissions, game categories, leaderboards, and authentication, split into Auth, Game, and Run services.",
+    tags: ["NestJS", "TypeScript", "Prisma", "JWT", "Microservices"],
+  },
+  {
+    repo: "TKJ-Quiz",
+    thumb: "assets/proyek/tkj-quiz.webp", // tampilan proyek (16:9)
+    title: "TKJ Quiz",
+    cat: "game",
+    emoji: "🎮",
+    theme: "m1",
+    desc: "An educational quiz game for learning Computer & Network Engineering: four levels, multiple choice, scoring, and right/wrong answer feedback.",
+    tags: ["Unity", "C#"],
+  },
+  {
+    repo: "NoiseCore-Website",
+    thumb: "assets/proyek/noisecore-website.webp", // tampilan proyek (16:9)
+    title: "NoiseCore Website",
+    cat: "web",
+    emoji: "🎧",
+    theme: "m4",
+    desc: "A responsive e-commerce website for audio lovers: a catalog of headphones, earbuds, and speakers, product promos, and member sign-up.",
+    tags: ["HTML", "CSS", "JavaScript"],
+    demo: "https://yupriando.github.io/NoiseCore-Website/",
+    demoType: "app",
+  },
+  {
+    repo: "NoiseCore-Figma",
+    thumb: "assets/proyek/noisecore-figma.webp", // tampilan proyek (16:9)
+    title: "NoiseCore UI/UX",
+    cat: "design",
+    emoji: "🎨",
+    theme: "m2",
+    desc: "UI/UX design for the NoiseCore audio e-commerce platform, made in Figma.",
+    tags: ["Figma", "UI/UX"],
+    demo: "https://www.figma.com/design/LZwzKnc34HwWa5pQCr44Xl/",
+    demoType: "design",
+    embed: false,
   },
 ];
 
+// Diambil dari CV (public/assets/cv.pdf), urut dari yang terbaru. points & tags boleh dikosongkan.
 export const experiences = [
   {
-    date: '2025 — Sekarang',
-    role: 'Fullstack Developer',
-    at: 'Freelance',
-    points: [
-      'Membangun website dan aplikasi web untuk UMKM dan klien perorangan.',
-      'Menangani proyek dari desain UI, pengembangan, sampai deploy ke server.',
-    ],
-    tags: ['React', 'Laravel', 'VPS'],
+    date: "2026 — Present",
+    role: "Champion Division Staff",
+    at: "Hapkido BINUS",
+    points: [],
   },
   {
-    date: '2024',
-    role: 'Web Developer Intern',
-    at: 'PT Contoh Teknologi',
+    date: "2025 — Present",
+    role: "Dhamma & Social Division Staff",
+    at: "KMBD BINUS",
     points: [
-      'Mengembangkan fitur dashboard internal yang dipakai lebih dari 50 karyawan.',
-      'Menulis REST API dan mengoptimalkan query database sehingga halaman 40% lebih cepat.',
+      "Event & Logistics Coordinator for DV Teach (2025): led event preparation and logistics coordination to support a successful event.",
+      "Logistics Coordinator for Asadha Puja (2025): managed event logistics and coordinated equipment preparation with cross-functional teams.",
     ],
-    tags: ['Node.js', 'MySQL', 'Git'],
+    tags: ["Event Management", "Logistics", "Teamwork"],
   },
   {
-    date: '2023 — 2024',
-    role: 'Asisten Laboratorium',
-    at: 'Lab Pemrograman Kampus',
+    date: "2025",
+    role: "Freshmen Leader & Freshmen Partner B2029",
+    at: "BINUS University",
     points: [
-      'Membimbing praktikum Algoritma & Pemrograman Web untuk lebih dari 60 mahasiswa.',
-      'Menyusun modul praktikum dan soal latihan.',
+      "As Freshmen Leader, mentored new students in adapting to university life.",
+      "As Freshmen Partner, supported freshmen through mentoring and academic guidance programs.",
     ],
+    tags: ["Leadership", "Mentoring"],
   },
   {
-    date: '2022 — Sekarang',
-    role: 'S1 Teknik Informatika',
-    at: 'Universitas Contoh',
+    date: "2024 — Present",
+    role: "Bachelor of Computer Science",
+    at: "BINUS University",
+    points: ["Relevant coursework: Programming, Data Structures, Database Systems, and Software Engineering."],
+  },
+  {
+    date: "2023 — 2024",
+    role: "Metaverse Club President",
+    at: "SMK Negeri 1 Tanjungpinang",
     points: [
-      'Fokus pada rekayasa perangkat lunak dan pengembangan web.',
-      'Aktif di komunitas programming kampus.',
+      "Led club activities and coordinated members in technology-related projects.",
+      "Organized learning sessions introducing emerging technologies and digital innovation concepts.",
     ],
+    tags: ["Leadership", "Communication"],
+  },
+  {
+    date: "Jan — Jun 2023",
+    role: "IT Support Intern",
+    at: "Infotech Computer",
+    points: [
+      "Installed operating systems, configured software, and assembled PCs.",
+      "Troubleshot hardware and software issues, performed routine maintenance, and provided technical support for laptops and desktops.",
+    ],
+    tags: ["PC Assembly", "OS Installation", "Troubleshooting"],
+  },
+  {
+    date: "2021 — 2024",
+    role: "Computer and Network Engineering",
+    at: "SMK Negeri 1 Tanjungpinang",
+    points: ["Studied computer hardware, networking fundamentals, operating systems, and IT troubleshooting."],
   },
 ];
 
 export const socials = [
-  { name: 'GitHub', icon: 'github', href: 'https://github.com/' },
-  { name: 'LinkedIn', icon: 'linkedin', href: 'https://linkedin.com/' },
-  { name: 'Instagram', icon: 'instagram', href: 'https://instagram.com/' },
-  { name: 'Email', icon: 'mail', href: `mailto:${profile.email}` },
+  { name: "GitHub", icon: "github", href: "https://github.com/Yupriando" },
+  {
+    name: "LinkedIn",
+    icon: "linkedin",
+    href: "https://linkedin.com/in/Yupriando",
+  },
+  {
+    name: "Instagram",
+    icon: "instagram",
+    href: "https://www.instagram.com/yupriandoo?vrfl=MTYwcTAwMXgwdmduYg==",
+  },
+  { name: "Email", icon: "mail", href: `mailto:${profile.email}` },
 ];
 
 // Celetukan si pemancing saat kapal diklik
 export const boatLines = [
-  'Lagi nunggu ikan… sekalian nunggu build 😴',
-  'Strike! Eh, ternyata cuma bug 🐛',
-  'Kode di laptop, kail di laut 🎣',
-  'npm install ikan --save 🐟',
-  'Sinyal di tengah laut: 1 bar 📶',
-  'Ikan juga butuh code review 🧐',
+  "Waiting for a fish… and for the build 😴",
+  "Strike! Oh wait, it's just a bug 🐛",
+  "Code on the laptop, hook in the sea 🎣",
+  "npm install fish --save 🐟",
+  "Signal out at sea: 1 bar 📶",
+  "Even fish need code review 🧐",
 ];

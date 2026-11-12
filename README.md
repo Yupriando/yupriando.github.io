@@ -49,9 +49,9 @@ src/
 
 - 🎣 Tarik kail pancing → ikan mendekati umpan → kalau nyangkut, klik kail/ikannya untuk menarik ke kapal
 - 🐦 Klik burung camar → dia menyelam menangkap ikan (dekati kursor → burung kaget)
-- 🪸 Klik terumbu karang → bergoyang & keluar gelembung (ikan badut di anemon akan bersembunyi)
+- 🪸 Klik terumbu karang → bergoyang & keluar gelembung
 - 🐡 Dekati ikan buntal → dia menggembung
-- Tahan & seret ikan untuk memegangnya, lepas untuk melempar
+- Tahan & seret ikan untuk memegangnya, lepas untuk melempar (ikan tetap di dalam air)
 - Klik air kosong untuk memberi makan ikan
 - Tangkap ikan ASCII hijau `><(((°>` untuk mem-fix bug 🐛
 - Klik kapal untuk mendengar celetukan si pemancing

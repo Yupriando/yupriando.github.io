@@ -2,7 +2,8 @@
  * Fungsi-fungsi menggambar penghuni laut di kanvas.
  * Semua ikan digambar menghadap ke kanan (+x) dengan pusat di (0,0).
  */
-import { isReady, isBroken } from './images';
+import { isReady, isBroken, loadImage } from './images';
+import { assets } from '../assets';
 import { LITE, canvasDPR } from '../perf';
 
 /*
@@ -596,22 +597,62 @@ function eel(c, f) {
 /* Ikan dari gambar sendiri (src/assets.js) */
 const usesImage = (sp) => !!sp.img && isReady(sp.img);
 
-function imageFish(c, f) {
+// Posisi & goyangan gambar ikan. Dipakai bersama oleh gambar dan lampunya supaya selalu menempel.
+function imageFishPose(c, f) {
   const sp = f.sp;
-  const img = sp.img;
-  const frames = sp.frames || 1;
+  const inflate = f.inflate || 0;
+  // ikan buntal: ganti ke gambar "menggembung" kalau ada
+  const swollen = inflate > 0.45 && isReady(sp.imgInflated);
+  const img = swollen ? sp.imgInflated : sp.img;
+  const frames = swollen ? 1 : sp.frames || 1;
   const fw = img.naturalWidth / frames;
   const fh = img.naturalHeight;
-  const w = f.size * (sp.imgScale || 1);
+  const w = f.size * ((swollen ? sp.imgInflatedScale : sp.imgScale) || 1);
   const h = (w * fh) / fw;
   const struggle = f.grabbed || f.hooked;
-  const puff = 1 + (f.inflate || 0) * 0.5;
+  const puff = swollen ? 0.85 + inflate * 0.25 : 1 + inflate * (sp.imgInflated ? 0.2 : 0.5);
   // gambar statis tetap terasa hidup: goyang & sedikit memanjang-memendek
   if (sp.upright && f.vx < 0) c.scale(-1, 1);
   c.rotate(Math.sin(f.phase) * (struggle ? 0.14 : 0.05));
   c.scale((1 + Math.sin(f.phase * 2) * 0.035) * puff, puff);
+  return { swollen, img, frames, fw, fh, w, h };
+}
+
+function imageFish(c, f) {
+  const sp = f.sp;
+  const { swollen, img, frames, fw, fh, w, h } = imageFishPose(c, f);
+  const holder = swollen ? (sp._inflated ||= {}) : sp; // cache perkecilan terpisah per gambar
   const fi = frames > 1 ? Math.floor(performance.now() / (1000 / (sp.fps || 8)) + f.phase * 2) % frames : 0;
-  c.drawImage(scaledFrame(sp, img, fi, fw, fh, w, h), -w / 2, -h / 2, w, h);
+  c.drawImage(scaledFrame(holder, img, fi, fw, fh, w, h), -w / 2, -h / 2, w, h);
+}
+
+/*
+ * Lampu pada ikan bergambar (src/assets.js → lights).
+ * x, y   : posisi pada gambar (0–1, dari kiri-atas, ikan menghadap kanan)
+ * r      : besar titik lampu (px)          halo  : lingkar cahaya kecil (px)
+ * aura   : cahaya lembut besar, relatif panjang ikan (mis. 0.6), untuk umpan angler
+ * color  : warna 'R,G,B'                    pulse : kecepatan berkedip (0 = menyala tetap)
+ */
+function imageFishLights(c, f, time) {
+  const { w, h } = imageFishPose(c, f);
+  for (let i = 0; i < f.sp.lights.length; i++) {
+    const l = f.sp.lights[i];
+    const x = (l.x - 0.5) * w;
+    const y = (l.y - 0.5) * h;
+    const rgb = l.color || '140,220,255';
+    const k = l.pulse ? 0.55 + 0.45 * Math.sin(time * l.pulse + i * 1.3 + f.phase) : 1;
+    if (l.aura) {
+      const R = f.size * l.aura * (0.85 + 0.15 * k);
+      const g = c.createRadialGradient(x, y, 0, x, y, R);
+      g.addColorStop(0, `rgba(${rgb},${0.55 * k})`);
+      g.addColorStop(1, `rgba(${rgb},0)`);
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(x, y, R, 0, TAU);
+      c.fill();
+    }
+    dot(c, x, y, (l.r || 1.4) * (0.8 + 0.2 * k), (l.halo || 4) * k, rgb);
+  }
 }
 
 export function drawFish(c, f) {
@@ -658,7 +699,16 @@ export function drawFish(c, f) {
 /* Bagian yang bercahaya (digambar setelah lapisan gelap) */
 export function drawFishGlow(c, f, time) {
   const sp = f.sp;
-  if (!sp.glow || usesImage(sp)) return;
+  if (usesImage(sp)) {
+    // ikan bergambar: pakai titik lampu dari src/assets.js
+    if (!sp.lights?.length) return;
+    c.save();
+    applyTransform(c, f);
+    imageFishLights(c, f, time);
+    c.restore();
+    return;
+  }
+  if (!sp.glow) return;
   const L = f.size;
   c.save();
   applyTransform(c, f);
@@ -740,7 +790,29 @@ function dot(c, x, y, r, halo, rgb) {
 /*  Hewan raksasa yang lewat di kejauhan (paus bungkuk & pari manta)   */
 /*  Digambar menghadap ke kanan; warna dibuat pudar seperti di jauh.   */
 /* ------------------------------------------------------------------ */
+// Gambar sendiri untuk paus / pari manta (src/assets.js → giants), menghadap ke kanan
+const giantCfg = (kind) => assets.giants?.[kind];
+const giantCache = {};
+function giantImage(c, w) {
+  const cfg = giantCfg(w.kind);
+  const img = cfg?.src && loadImage(cfg.src);
+  if (!isReady(img)) return false;
+  const L = w.size * (cfg.scale || 1);
+  const h = (L * img.naturalHeight) / img.naturalWidth;
+  const ph = w.phase;
+  c.save();
+  c.translate(w.x, w.y + Math.sin(ph * 0.5) * w.size * 0.012);
+  c.scale(w.dir, 1);
+  c.rotate(Math.sin(ph * 0.5) * 0.03);
+  c.globalAlpha = w.alpha * (cfg.opacity ?? 1);
+  const holder = (giantCache[w.kind] ||= {});
+  c.drawImage(scaledFrame(holder, img, 0, img.naturalWidth, img.naturalHeight, L, h), -L / 2, -h / 2, L, h);
+  c.restore();
+  return true;
+}
+
 export function drawWhale(c, w) {
+  if (giantImage(c, w)) return;
   const L = w.size;
   const ph = w.phase;
   c.save();
@@ -868,6 +940,7 @@ function pectoral(c, L, x, y, rot, dark, light, len) {
 }
 
 export function drawManta(c, m) {
+  if (giantImage(c, m)) return;
   const L = m.size;
   const f = Math.sin(m.phase);
   const k = 0.72 + 0.28 * f; // bentang sayap saat mengepak

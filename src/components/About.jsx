@@ -1,4 +1,6 @@
 import { profile } from '../data';
+import DiveHelmet from './DiveHelmet';
+import useGithubProjects from '../hooks/useGithubProjects';
 import Reveal from './ui/Reveal';
 import TiltCard from './ui/TiltCard';
 import SectionHead from './ui/SectionHead';
@@ -26,19 +28,21 @@ function CodeValue({ value }) {
 }
 
 export default function About() {
+  // jumlah proyek = repo yang tampil di bagian Projects (live dari GitHub, cadangan: daftar di data.js)
+  const { list } = useGithubProjects();
+  const repoCount = list.length;
+  const demoCount = list.filter((p) => p.demo).length; // sama dengan filter "Try it live" & badge LIVE
+  const auto = { github: repoCount, demos: demoCount };
+
   return (
-    <section className="zone" id="tentang">
+    <section className="zone" id="about">
       <div className="container">
-        <SectionHead idx="01" zone="zona_epipelagik · 200 m" note="cahaya matahari masih tembus" title="Tentang Aku" />
+        <SectionHead idx="01" zone="epipelagic_zone · 200 m" note="sunlight still reaches here" title="About Me" />
 
         <div className="about-grid">
           <Reveal>
             <TiltCard className="glass about-profile" max={6}>
-              <div className="porthole">
-                <div className="porthole-inner">
-                  {profile.photo ? <img src={profile.photo} alt={profile.name} /> : <span>{profile.initial}</span>}
-                </div>
-              </div>
+              <DiveHelmet />
               <h3>{profile.name}</h3>
               <p className="mono muted small">{profile.title}</p>
               <ul className="facts">
@@ -48,11 +52,11 @@ export default function About() {
                   </li>
                 ))}
                 <li>
-                  <span className="dot-online" /> Terbuka untuk kolaborasi
+                  <span className="dot-online" /> Open to collaboration
                 </li>
               </ul>
               <a className="btn btn-small" href={profile.cv} download>
-                Unduh CV ⬇
+                Download CV ⬇
               </a>
             </TiltCard>
           </Reveal>
@@ -72,11 +76,11 @@ export default function About() {
                     <i />
                     <i />
                   </span>
-                  <span className="mono small muted">tentang-aku.js</span>
+                  <span className="mono small muted">about-me.js</span>
                 </div>
                 <pre className="mono">
                   <code>
-                    <span className="k">const</span> aku = {'{\n'}
+                    <span className="k">const</span> me = {'{\n'}
                     {profile.code.map(([key, value], i) => (
                       <span key={key}>
                         {'  '}
@@ -86,7 +90,7 @@ export default function About() {
                       </span>
                     ))}
                     {'};\n'}
-                    <span className="c">// psst… coba pegang ikan di latar belakang 🐟</span>
+                    <span className="c">// psst… try grabbing a fish in the background 🐟</span>
                   </code>
                 </pre>
               </div>
@@ -98,7 +102,11 @@ export default function About() {
           {profile.stats.map((s, i) => (
             <Reveal key={s.label} delay={i * 0.08}>
               <TiltCard className="glass stat" max={10}>
-                {s.text ? <strong>{s.text}</strong> : <Counter to={s.value} suffix={s.suffix} />}
+                {s.text ? (
+                  <strong>{s.text}</strong>
+                ) : (
+                  <Counter to={s.source ? auto[s.source] ?? 0 : s.value} suffix={s.suffix} />
+                )}
                 <span>{s.label}</span>
               </TiltCard>
             </Reveal>

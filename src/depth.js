@@ -5,11 +5,11 @@
 
 // [selector section, kedalaman (m) saat section itu mencapai tengah layar]
 const ANCHORS = [
-  ['#tentang', 200],
-  ['#keahlian', 1000],
-  ['#proyek', 4000],
-  ['#pengalaman', 6000],
-  ['#kontak', 8500],
+  ['#about', 200],
+  ['#skills', 1000],
+  ['#projects', 4000],
+  ['#experience', 6000],
+  ['#contact', 8500],
 ];
 export const MAX_DEPTH = 10994; // Challenger Deep
 
@@ -64,12 +64,12 @@ export function subscribe(fn) {
 }
 
 export function zoneName(depth) {
-  if (depth < 1) return 'Permukaan';
-  if (depth < 200) return 'Epipelagik';
-  if (depth < 1000) return 'Mesopelagik';
-  if (depth < 4000) return 'Batipelagik';
-  if (depth < 6000) return 'Abisopelagik';
-  return 'Hadalpelagik';
+  if (depth < 1) return 'Surface';
+  if (depth < 200) return 'Epipelagic';
+  if (depth < 1000) return 'Mesopelagic';
+  if (depth < 4000) return 'Bathypelagic';
+  if (depth < 6000) return 'Abyssopelagic';
+  return 'Hadopelagic';
 }
 
 export function startDepthTracking() {

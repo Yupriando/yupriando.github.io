@@ -110,12 +110,21 @@
 
 .skill-cats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  /* 300px → 4 kartu tersusun 2 × 2 di desktop, 1 kolom di HP */
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 16px;
 }
 .skill-cat {
   padding: 22px;
   height: 100%;
+}
+/* grup lebar penuh (skillGroups[].wide) dengan daftar skill dua kolom */
+.skill-cat-wide {
+  grid-column: 1 / -1;
+}
+.skill-list.two-col {
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  column-gap: 32px;
 }
 .skill-cat h3 {
   font-size: 1.1rem;

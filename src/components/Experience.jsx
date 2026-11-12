@@ -11,9 +11,9 @@ export default function Experience() {
   const { scrollYProgress } = useScroll({ target: listRef, offset: ['start 75%', 'end 60%'] });
 
   return (
-    <section className="zone" id="pengalaman">
+    <section className="zone" id="experience">
       <div className="container">
-        <SectionHead idx="04" zone="zona_abisopelagik · 6.000 m" note="gelap total, kursormu jadi senter 🔦" title="Pengalaman" />
+        <SectionHead idx="04" zone="abyssopelagic_zone · 6,000 m" note="pitch black, your cursor is now a flashlight 🔦" title="Experience" />
 
         <ol className="timeline" ref={listRef}>
           <span className="tl-track" aria-hidden="true" />
@@ -34,11 +34,13 @@ export default function Experience() {
                 <h3>
                   {exp.role} <span className="at">@ {exp.at}</span>
                 </h3>
-                <ul>
-                  {exp.points.map((pt) => (
-                    <li key={pt}>{pt}</li>
-                  ))}
-                </ul>
+                {exp.points?.length > 0 && (
+                  <ul>
+                    {exp.points.map((pt) => (
+                      <li key={pt}>{pt}</li>
+                    ))}
+                  </ul>
+                )}
                 {exp.tags && (
                   <ul className="tags">
                     {exp.tags.map((t) => (

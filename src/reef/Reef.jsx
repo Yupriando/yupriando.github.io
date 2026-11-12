@@ -1,6 +1,6 @@
 /*
  * Terumbu karang prosedural. Ada 4 gaya sesuai kedalaman:
- *  shallow  — karang warna-warni, anemon + ikan badut
+ *  shallow  — karang warna-warni, anemon
  *  twilight — kipas laut & spons ungu-merah
  *  midnight — pena laut & spons kaca yang bercahaya
  *  abyss    — ventilasi hidrotermal & cacing tabung (dipakai di dasar laut)
@@ -28,7 +28,6 @@ const VARIANTS = {
     back: ['kelp', 'kelp', 'fan', 'branching', 'branching', 'tubes', 'sponge', 'table', 'polyps', 'brain'],
     front: ['branching', 'branching', 'brain', 'brain', 'anemone', 'anemone', 'polyps', 'polyps', 'tubes', 'star', 'shell', 'urchin', 'sponge', 'table', 'fan'],
     corals: ['#ff6f91', '#ff9671', '#ffc75f', '#c34a9c', '#00c9a7', '#ff8c42', '#a77bca', '#e84a5f', '#4ecdc4', '#f9f871'],
-    nemo: 0.6,
   },
   twilight: {
     rock: ['#1d4b78', '#0c2a4d'],
@@ -36,7 +35,6 @@ const VARIANTS = {
     back: ['fan', 'fan', 'kelp', 'sponge', 'branching', 'tubes', 'polyps'],
     front: ['fan', 'fan', 'sponge', 'polyps', 'brain', 'urchin', 'star', 'anemone', 'branching', 'tubes', 'shell'],
     corals: ['#b5179e', '#7209b7', '#f72585', '#e85d04', '#9d4edd', '#c77dff', '#e5383b', '#ff9e00'],
-    nemo: 0,
   },
   midnight: {
     rock: ['#0d2445', '#050f22'],
@@ -44,13 +42,11 @@ const VARIANTS = {
     back: ['seapen', 'bamboo', 'glass', 'glass', 'seapen', 'polyps'],
     front: ['seapen', 'seapen', 'bamboo', 'glass', 'anemone', 'brittle', 'polyps', 'brittle'],
     corals: ['#7bf3ff', '#ff7bd5', '#b388ff', '#64ffda', '#82b1ff'],
-    nemo: 0,
   },
   abyss: {
     back: ['vent', 'glass', 'bamboo', 'seapen', 'tubeworms'],
     front: ['tubeworms', 'tubeworms', 'brittle', 'anemone', 'glass', 'seapen', 'star'],
     corals: ['#7bf3ff', '#ff7bd5', '#b388ff', '#64ffda', '#ff9e7a'],
-    nemo: 0,
   },
 };
 
@@ -63,7 +59,26 @@ function renderShape(it, uid, pal) {
   if (it.type === 'image') {
     const w = it.img.width || 70;
     const h = it.img.height || w;
-    return <image href={assetUrl(it.img.src)} x={-w / 2} y={-h} width={w} height={h} preserveAspectRatio="xMidYMax meet" />;
+    const img = <image href={assetUrl(it.img.src)} x={-w / 2} y={-h} width={w} height={h} preserveAspectRatio="xMidYMax meet" />;
+    // karang bercahaya (src/assets.js → glow), hanya di laut dalam
+    const deep = pal === VARIANTS.midnight || pal === VARIANTS.abyss;
+    if (!it.img.glow || !deep) return img;
+    const gid = `cg-${uid}`;
+    const rgb = it.img.glow;
+    return (
+      <g className="coral-glow" style={{ '--glow': rgb }}>
+        <defs>
+          <radialGradient id={gid}>
+            <stop offset="0" stopColor={`rgb(${rgb})`} stopOpacity="0.55" />
+            <stop offset="0.55" stopColor={`rgb(${rgb})`} stopOpacity="0.18" />
+            <stop offset="1" stopColor={`rgb(${rgb})`} stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        {/* pendaran lembut di belakang karang */}
+        <ellipse className="coral-aura" cx="0" cy={f1(-h * 0.5)} rx={f1(w * 0.85)} ry={f1(h * 0.85)} fill={`url(#${gid})`} />
+        {img}
+      </g>
+    );
   }
   const r = mulberry32(it.seed);
   const c1 = pick(r, pal.corals);
@@ -88,13 +103,11 @@ function renderShape(it, uid, pal) {
           <Anemone seed={it.seed} color={c1} tip="#ffffff" base="#2a1d3d" />
         </g>
       ) : (
-        <Anemone
-          seed={it.seed}
-          color={pick(r, ['#ff9ecf', '#b5f2ff', '#ffd6a5', '#caffbf', '#ffadad'])}
-          tip="#ff70a6"
-          base="#7a3b69"
-          nemo={r() < pal.nemo}
-        />
+        (() => {
+          const color = pick(r, ['#ff9ecf', '#b5f2ff', '#ffd6a5', '#caffbf', '#ffadad']);
+          r(); // dulu untuk peluang ikan badut; tetap dipanggil supaya susunan & warna karang tidak berubah
+          return <Anemone seed={it.seed} color={color} tip="#ff70a6" base="#7a3b69" />;
+        })()
       );
     case 'kelp':
       return <Kelp seed={it.seed} color="#2d6a4f" leaf={pick(r, ['#52b788', '#74c69d', '#40916c'])} />;
@@ -199,11 +212,14 @@ export function handleReefClick(e) {
   void item.getBoundingClientRect();
   item.classList.add('poked');
   setTimeout(() => item.classList.remove('poked'), 750);
-  if (item.classList.contains('reef-anemone')) {
-    item.classList.add('hiding');
-    setTimeout(() => item.classList.remove('hiding'), 2600);
-  }
 }
+
+// warna garis cahaya di tepi atas batu terumbu bertekstur
+const RIM = {
+  shallow: 'rgba(255,255,255,.2)',
+  twilight: 'rgba(170,200,255,.26)',
+  midnight: 'rgba(130,190,255,.45)',
+};
 
 const rockPath = (fn) => {
   let d = 'M0 300';
@@ -216,14 +232,23 @@ export default function Reef({ variant = 'shallow', seed = 1, className = '' }) 
   const geo = useMemo(() => {
     const backY = (x) => 205 + 16 * Math.sin(x / 150 + seed) + 9 * Math.sin(x / 53 + seed * 2);
     const frontY = (x) => 258 + 10 * Math.sin(x / 120 + seed * 0.7) + 6 * Math.sin(x / 41 + seed);
-    return { backY, frontY, back: rockPath(backY), front: rockPath(frontY) };
+    const edge = (fn) => {
+      let d = '';
+      for (let x = 0; x <= 1440; x += 20) d += `${x ? ' L' : 'M'}${x} ${f1(fn(x) + 1)}`;
+      return d;
+    };
+    return { backY, frontY, back: rockPath(backY), front: rockPath(frontY), backEdge: edge(backY), frontEdge: edge(frontY) };
   }, [seed]);
   const id = `${variant}-${seed}`;
   // tinggi terumbu di layar (lihat reef.css) → rentang karang yang terlihat
   const range = visibleRange(window.innerWidth <= 640 ? 200 : Math.min(340, Math.max(220, window.innerWidth * 0.24)), 300);
+  // tekstur tanah dari gambar sendiri (src/assets.js → reefGround), kosong = gradasi warna bawaan
+  const tex = assets.reefGround?.[variant];
+  const backFill = tex?.back ? `url(#rock-bt-${id})` : `url(#rock-b-${id})`;
+  const frontFill = tex?.front ? `url(#rock-ft-${id})` : `url(#rock-f-${id})`;
 
   return (
-    <div className={`reef reef-${variant} ${className}`} aria-hidden="true">
+    <div className={`reef reef-${variant}${tex ? ' reef-textured' : ''} ${className}`} aria-hidden="true">
       <svg viewBox="0 0 1440 300" preserveAspectRatio="xMidYMax slice" onClick={handleReefClick}>
         <defs>
           <linearGradient id={`rock-b-${id}`} x1="0" y1="0" x2="0" y2="1">
@@ -234,10 +259,34 @@ export default function Reef({ variant = 'shallow', seed = 1, className = '' }) 
             <stop offset="0" stopColor={v.rockFront[0]} />
             <stop offset="1" stopColor={v.rockFront[1]} />
           </linearGradient>
+          {tex?.back && (
+            <pattern id={`rock-bt-${id}`} patternUnits="userSpaceOnUse" x="0" y="165" width="1440" height="135">
+              <image href={assetUrl(tex.back)} width="1440" height="135" preserveAspectRatio="none" />
+            </pattern>
+          )}
+          {tex?.front && (
+            <pattern id={`rock-ft-${id}`} patternUnits="userSpaceOnUse" x="0" y="225" width="1440" height="75">
+              <image href={assetUrl(tex.front)} width="1440" height="75" preserveAspectRatio="none" />
+            </pattern>
+          )}
+          {/* bayangan: tanah makin gelap ke bawah (seperti tebing karang yang turun ke kedalaman) */}
+          <linearGradient id={`rock-shade-${id}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#000" stopOpacity="0" />
+            <stop offset="0.55" stopColor="#000" stopOpacity="0" />
+            <stop offset="1" stopColor={v.rock[1]} stopOpacity="0.85" />
+          </linearGradient>
         </defs>
-        <path d={geo.back} fill={`url(#rock-b-${id})`} opacity=".7" />
+        <path d={geo.back} fill={backFill} opacity={tex?.back ? 0.85 : 0.7} />
         <ReefItems variant={variant} seed={seed * 31} uid={id} contour={geo.backY} step={[30, 62]} scale={[0.5, 0.8]} back range={range} />
-        <path d={geo.front} fill={`url(#rock-f-${id})`} />
+        <path d={geo.front} fill={frontFill} />
+        {tex && (
+          <>
+            {/* cahaya tipis di tepi atas batu (di laut dalam: pantulan kebiruan dari karang bercahaya) */}
+            <path d={geo.backEdge} fill="none" stroke={RIM[variant] || RIM.shallow} strokeWidth="1.2" opacity="0.7" />
+            <path d={geo.frontEdge} fill="none" stroke={RIM[variant] || RIM.shallow} strokeWidth="1.6" />
+            <rect x="0" y="150" width="1440" height="150" fill={`url(#rock-shade-${id})`} pointerEvents="none" />
+          </>
+        )}
         <ReefItems variant={variant} seed={seed * 97} uid={id} contour={geo.frontY} step={[34, 70]} scale={[0.75, 1.2]} range={range} />
       </svg>
     </div>

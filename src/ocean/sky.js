@@ -9,7 +9,6 @@ const pick = (arr) => arr[(Math.random() * arr.length) | 0];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 
-import { airFish } from './shared';
 import { drawFish, drawFishGlow } from './draw';
 import { SPECIES, ZONE_FISH, applyFishAssets } from './species';
 import { loadImage, isReady } from './images';
@@ -23,12 +22,16 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
   // gambar burung sendiri (src/assets.js), kosong = burung bawaan
   const birdFrames = (assets.bird?.frames || []).filter(Boolean).map(loadImage);
   const birdScale = assets.bird?.scale || 1;
+  const diveFrame = assets.bird?.dive ? loadImage(assets.bird.dive) : null; // pose terjun (opsional)
+  const diveAngle = assets.bird?.diveAngle ?? 0.6; // kemiringan badan di gambar terjun (radian)
+  const beak = assets.bird?.beak; // [x, y] posisi paruh di gambar terbang (0–1)
+  const catchList = assets.bird?.catch; // spesies yang bisa ditangkap burung
   const ctx = canvas.getContext('2d');
   const root = document.documentElement;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let W = 0, H = 0, DPR = 1, seaY = 0, raf = 0, last = 0, time = 0;
-  let visible = true, spawnTimer = 0, toldDive = false, toldCatch = false, toldSnatch = false;
+  let visible = true, spawnTimer = 0, toldDive = false, toldCatch = false;
   const birds = [], drops = [];
   const pointer = { x: -999, y: -999 };
 
@@ -108,7 +111,7 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
             this.carryFish = catchFor(this);
             if (!toldCatch && this.carryFish) {
               toldCatch = true;
-              toast(`🐟 Hap! Burungnya dapat ${this.carryFish.sp.name}!`);
+              toast(`🐟 Gotcha! The gull caught a ${this.carryFish.sp.name}!`);
             }
           }
         }
@@ -137,6 +140,17 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
       c.rotate(rot);
 
       const lift = this.state === 'dive' ? -0.15 : this.glide > 0 && this.startle <= 0 ? 0.25 : Math.sin(this.flap);
+
+      // pose terjun: dipakai saat burung sedang meluncur turun. Gambarnya sudah miring,
+      // jadi rotasinya dikurangi kemiringan itu supaya kepala tetap searah arah terjun.
+      if (this.state === 'dive' && this.vy > 0 && isReady(diveFrame)) {
+        c.rotate(-diveAngle);
+        const w = s * 1.25 * birdScale;
+        const h = (w * diveFrame.naturalHeight) / diveFrame.naturalWidth;
+        c.drawImage(diveFrame, -w / 2, -h / 2, w, h);
+        c.restore();
+        return;
+      }
 
       if (birdFrames.length && drawBirdImage(c, s, lift)) {
         c.restore();
@@ -193,7 +207,15 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
       const f = this.carryFish;
       if (f) {
         const s = this.size;
-        const lx = s * 0.62, ly = -s * 0.02; // posisi paruh (koordinat lokal burung)
+        // posisi paruh (koordinat lokal burung): dari gambar sendiri kalau ada, kalau tidak burung bawaan
+        let lx = s * 0.62, ly = -s * 0.02;
+        const img = birdFrames[0];
+        if (beak && isReady(img)) {
+          const w = s * 1.5 * birdScale;
+          const h = (w * img.naturalHeight) / img.naturalWidth;
+          lx = (beak[0] - 0.5) * w + f.size * 0.2; // ikan sedikit di depan paruh, tidak menutupi kepala
+          ly = (beak[1] - 0.5) * h;
+        }
         const bx = this.x + this.dir * (Math.cos(rot) * lx - Math.sin(rot) * ly);
         const by = this.y + Math.sin(rot) * lx + Math.cos(rot) * ly;
         f.x = bx;
@@ -221,14 +243,19 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
   // ikan hasil menyelam: spesies sungguhan dari zona permukaan yang muat dibawa burung
   function catchFor(bird) {
     const maxSize = bird.size * 2.2;
-    const ids = ZONE_FISH[0].filter((id) => !SPECIES[id].protect && SPECIES[id].size[0] <= maxSize);
+    // src/assets.js → bird.catch membatasi spesies (mis. hanya sarden); kosong = semua ikan permukaan yang muat
+    const ids = catchList?.length
+      ? catchList.filter((id) => SPECIES[id])
+      : ZONE_FISH[0].filter((id) => !SPECIES[id].protect && SPECIES[id].size[0] <= maxSize);
     if (!ids.length) return null;
     const id = pick(ids);
     const sp = SPECIES[id];
+    // ikan kecil (teri/sarden) diperbesar sedikit supaya terlihat jelas di paruh
+    const size = clamp(rand(sp.size[0], sp.size[1]), bird.size * 0.55, maxSize);
     return {
       type: id,
       sp,
-      size: Math.min(rand(sp.size[0], sp.size[1]), maxSize),
+      size,
       x: 0,
       y: 0,
       angle: 0,
@@ -268,41 +295,6 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
 
   const maxBirds = () => (W < 600 ? 3 : 6);
 
-  // burung yang dekat ikan terbang akan mengejar & menyambarnya
-  function chaseFlyingFish(dt) {
-    const r = canvas.getBoundingClientRect();
-    for (const f of airFish) {
-      if (f.stolen) continue;
-      const fx = f.x - r.left;
-      const fy = f.y - r.top;
-      for (const b of birds) {
-        if (b.state !== 'fly' || b.carryFish) continue;
-        // burung tidak sanggup membawa ikan yang jauh lebih besar, dan tidak memangsa satwa dilindungi
-        if (f.sp.protect || f.size > b.size * 2.2) continue;
-        const d = Math.hypot(fx - b.x, fy - b.y);
-        if (d > 250) continue;
-        // kejar
-        b.dir = fx >= b.x ? 1 : -1;
-        b.x += (fx - b.x) * 0.06 * dt;
-        b.y += (fy - b.y) * 0.06 * dt;
-        b.flap += 0.35 * dt;
-        b.glide = 0;
-        if (d < b.size * 0.7 + f.size * 0.4) {
-          f.stolen = true;
-          b.carryFish = f;
-          f.grabbed = true; // supaya ekornya bergerak meronta
-          b.startle = 60;
-          b.vy = -2.5;
-          if (!toldSnatch) {
-            toldSnatch = true;
-            toast(`🐦 Hap! ${f.sp.name} disambar burung camar!`);
-          }
-          break;
-        }
-      }
-    }
-  }
-
   function frame(now) {
     raf = requestAnimationFrame(frame);
     const dt = last ? Math.min((now - last) / 16.67, 3) : 1;
@@ -316,7 +308,6 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
       spawnTimer = rand(80, 220);
     }
     for (const b of birds) b.update(dt);
-    if (airFish.size) chaseFlyingFish(dt);
     for (const d of drops) {
       d.vy += 0.25 * dt;
       d.x += d.vx * dt;
@@ -361,7 +352,7 @@ export function createSky(canvas, hero, { toast = () => {} } = {}) {
     root.classList.remove('can-poke');
     if (!toldDive) {
       toldDive = true;
-      toast('🐦 Burung camar menyelam mencari ikan!');
+      toast('🐦 The seagull is diving for fish!');
     }
   }
 

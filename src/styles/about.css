@@ -20,12 +20,37 @@
   margin: 6px 0 0;
 }
 
-/* foto dalam jendela kapal selam */
-.porthole {
+/* ---------- Helm selam + foto (DiveHelmet.jsx) ---------- */
+.helmet-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.helmet-stage {
   position: relative;
+  width: 200px;
+  height: 222px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  perspective: 700px;
+  -webkit-tap-highlight-color: transparent;
+}
+.helmet-stage:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 24px;
+}
+
+/* foto dalam jendela kapal selam (di belakang helm) */
+.porthole {
+  position: absolute;
+  left: 25px;
+  top: 27px; /* pusat (100, 102) = pusat kaca helm */
   width: 150px;
   height: 150px;
-  margin: 0 auto;
   border-radius: 50%;
   padding: 10px;
   background: linear-gradient(145deg, #c9a24a, #7a5a1f);
@@ -38,6 +63,11 @@
   border-radius: 50%;
   border: 2px dashed rgba(92, 225, 230, 0.4);
   animation: spin 18s linear infinite;
+  opacity: 0;
+  transition: opacity 0.5s 0.9s;
+}
+.is-open .porthole::before {
+  opacity: 1;
 }
 @keyframes spin {
   to {
@@ -59,10 +89,156 @@
   font-weight: 700;
   color: #fff;
 }
-.porthole-inner img {
+.porthole-inner img,
+.porthole-inner span {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: grid;
+  place-items: center;
+  /* di balik kaca berembun: buram & gelap */
+  filter: blur(2.5px) brightness(0.75) saturate(0.8);
+  transform: scale(1.12);
+  transition: filter 0.6s ease 0.25s, transform 0.9s var(--ease) 0.4s;
+}
+.is-open .porthole-inner img,
+.is-open .porthole-inner span {
+  filter: none;
+  transform: scale(1);
+}
+
+/* helm kuningan */
+.helmet {
+  position: absolute;
+  inset: 0;
+  perspective: 500px; /* supaya kaca depan terlihat berayun 3D */
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+.helmet-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.helmet-stage:not(.is-open):hover .helmet {
+  animation: helmet-wobble 0.6s ease-in-out;
+}
+@keyframes helmet-wobble {
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+/* helm versi gambar (public/assets/helm/) — angka dari ukuran gambar, panggung 200px */
+.helmet-img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 200px;
+  height: auto;
+  user-select: none;
+}
+.faceplate-img {
+  position: absolute;
+  left: 43.4px;
+  top: 45.8px;
+  width: 112.5px;
+  height: 112.5px;
+  transform-origin: 0% 50%;
+  user-select: none;
+}
+
+/* kaca depan berengsel di kiri (helm SVG cadangan) */
+.faceplate {
+  position: absolute;
+  left: 42px;
+  top: 47px;
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  transform-origin: 0% 50%;
+  box-shadow: 0 0 0 2px #5a3a0c;
+}
+/* cincin kuningan; bagian tengahnya dilubangi supaya kaca tembus pandang */
+.faceplate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffeaa0, #d9a63a 45%, #7a5212);
+  -webkit-mask: radial-gradient(circle, transparent 49.5px, #000 50px);
+  mask: radial-gradient(circle, transparent 49.5px, #000 50px);
+}
+.faceplate-glass {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px #5a3a0c, inset 0 0 18px rgba(0, 0, 0, 0.45);
+  background:
+    radial-gradient(ellipse 30% 18% at 32% 26%, rgba(255, 255, 255, 0.75), transparent 70%),
+    radial-gradient(circle at 70% 75%, rgba(255, 255, 255, 0.18), transparent 35%),
+    rgba(170, 215, 240, 0.28);
+}
+/* embun kecil di kaca */
+.faceplate-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 24% 62%, rgba(255, 255, 255, 0.5) 0 2px, transparent 3px),
+    radial-gradient(circle at 66% 30%, rgba(255, 255, 255, 0.45) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 58% 70%, rgba(255, 255, 255, 0.4) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 38% 44%, rgba(255, 255, 255, 0.35) 0 1.5px, transparent 2.5px);
+}
+.bolt {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff2b8, #a9771c);
+  box-shadow: 0 0 0 1px #5a3a0c;
+}
+.b1 { top: 0.5px; left: 54.5px; }
+.b2 { bottom: 0.5px; left: 54.5px; }
+.b3 { left: 0.5px; top: 54.5px; }
+.b4 { right: 0.5px; top: 54.5px; }
+
+/* gelembung */
+.helmet-bubbles {
+  position: absolute;
+  left: 50%;
+  top: 95px;
+  pointer-events: none;
+}
+.helmet-bubbles i {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(200, 245, 255, 0.85);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(92, 225, 230, 0.1) 60%);
+}
+
+.helmet-hint {
+  color: var(--muted);
+}
+.helmet-stage:not(.is-open) + .helmet-hint {
+  animation: hint-pulse 2.4s ease-in-out infinite;
+}
+@keyframes hint-pulse {
+  50% {
+    color: var(--accent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .helmet-stage:not(.is-open):hover .helmet,
+  .helmet-stage + .helmet-hint {
+    animation: none;
+  }
 }
 
 .facts {

@@ -38,7 +38,7 @@ function Sonar() {
         })}
       </div>
       <p className="sonar-caption mono small">
-        sonar.scan() → <span className="accent">{total} skill terdeteksi</span>
+        sonar.scan() → <span className="accent">{total} skills detected</span>
       </p>
     </Reveal>
   );
@@ -46,21 +46,21 @@ function Sonar() {
 
 export default function Skills() {
   return (
-    <section className="zone" id="keahlian">
+    <section className="zone" id="skills">
       <div className="container">
-        <SectionHead idx="02" zone="zona_mesopelagik · 1.000 m" note="senja abadi" title="Keahlian" />
+        <SectionHead idx="02" zone="mesopelagic_zone · 1,000 m" note="eternal twilight" title="Skills" />
 
         <div className="skills-grid">
           <Sonar />
 
           <div className="skill-cats">
             {skillGroups.map((group, gi) => (
-              <Reveal key={group.name} delay={gi * 0.1}>
-                <TiltCard className="glass skill-cat" max={5}>
+              <Reveal key={group.name} delay={gi * 0.1} className={group.wide ? 'skill-cat-wide' : undefined}>
+                <TiltCard className="glass skill-cat" max={group.wide ? 2 : 5}>
                   <h3>
                     <span className="ico">{group.icon}</span> {group.name}
                   </h3>
-                  <ul className="skill-list">
+                  <ul className={`skill-list${group.wide ? ' two-col' : ''}`}>
                     {group.items.map(([name, level], i) => (
                       <li key={name}>
                         <div className="sk-row">
@@ -86,7 +86,7 @@ export default function Skills() {
 
         <Reveal className="learning">
           <span className="mono small">
-            <span className="accent">$</span> npm install --sedang-dipelajari
+            <span className="accent">$</span> npm install --currently-learning
           </span>
           <div className="chips">
             {learning.map((item, i) => (
