@@ -25,6 +25,12 @@ const HOOK_IMG = assets.hook?.src ? loadImage(assets.hook.src) : null;
 const HOOK_H = assets.hook?.height || 30;
 const HOOK_EYE = assets.hook?.eye || [0.78, 0.02];
 
+// pelampung (src/assets.js → bobber), kosong = bola merah-putih bawaan
+const FLOAT_IMG = assets.bobber?.src ? loadImage(assets.bobber.src) : null;
+const FLOAT_H = assets.bobber?.height || 36;
+const FLOAT_WL = assets.bobber?.waterline ?? 0.575;
+const FLOAT_EYE = assets.bobber?.eye ?? 0.965;
+
 // pelet makanan ikan (src/assets.js → food), kosong = titik coklat bawaan
 const FOOD_IMG = assets.food?.src ? loadImage(assets.food.src) : null;
 const FOOD_SIZE = assets.food?.size || 7;
@@ -72,6 +78,18 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     x: 0, y: 0, tx: 0, ty: 0, bobX: 0,
     init: false, visible: false, dragging: false, reeling: false,
     caught: null, biteTime: 0, idle: 999, cooldown: 0, used: false, tip: null,
+    // lemparan pembuka: 'waiting' (kapal masih meluncur masuk) → 'flying' (pelampung melayang) → 'done'
+    cast: 'waiting', castT: 0, castWait: 0, landX: 0,
+  };
+  const CAST_T = 44; // lama pelampung melayang (frame, ±0,7 detik)
+
+  // dipicu Boat.jsx saat si pemancing mengayunkan joran (setelah kapal berhenti)
+  const onCast = () => {
+    if (hook.cast !== 'waiting') return;
+    const onScreen = surf > 60 && surf < H - 70 && hook.tip;
+    hook.cast = onScreen ? 'flying' : 'done'; // kalau laut tidak terlihat, langsung siap tanpa animasi
+    hook.castT = 0;
+    if (onScreen) hook.landX = hook.tip.x - 48; // jatuh sedikit di depan joran, lalu terseret pelan ke posisi menunggu
   };
 
   /* ------------------------------ IKAN ------------------------------ */
@@ -570,7 +588,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       catches++;
       const rare = f.sp.rare ? ' ✨ Rare!' : '';
       toast(`🎣 Caught a ${f.sp.name}!${rare}`);
-      emit('catch', { name: f.sp.name, catches, bugs });
+      emit('catch', { id: f.type, name: f.sp.name, catches, bugs });
     }
   }
 
@@ -586,6 +604,26 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     if (!el) { hook.visible = false; return; }
     const r = el.getBoundingClientRect();
     hook.tip = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+
+    // kail belum dilempar: belum ada di air (tidak digambar & ikan tidak bisa menggigit)
+    if (hook.cast !== 'done') {
+      hook.visible = false;
+      if (hook.cast === 'waiting') {
+        hook.castWait += dt;
+        if (hook.castWait > 420) onCast(); // cadangan kalau sinyal dari kapal tidak datang (±7 detik)
+      } else if ((hook.castT += dt) >= CAST_T) {
+        // pelampung mendarat: cipratan, lalu kail tenggelam pelan ke posisi menunggu
+        hook.cast = 'done';
+        hook.init = true;
+        hook.x = hook.bobX = hook.landX;
+        hook.y = surf + 6;
+        hook.tx = hook.tip.x - 6;
+        hook.ty = surf + Math.min(170, (H - surf) * 0.55);
+        splash(hook.landX, surf, 12);
+        for (let i = 0; i < 5; i++) bubbles.push(new Bubble(hook.landX + rand(-6, 6), surf + rand(6, 22), rand(1.5, 3.5)));
+      }
+      return;
+    }
     const wasVisible = hook.visible;
     hook.visible = surf > 60 && surf < H - 70 && r.width >= 0;
     if (!hook.visible) {
@@ -642,7 +680,9 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     c.strokeStyle = 'rgba(255,255,255,.45)';
     c.lineWidth = 1.1;
     c.beginPath();
-    c.moveTo(hook.bobX, surf);
+    // tali ke kail turun dari cincin di bawah pelampung (gambar), atau dari permukaan (pelampung bawaan)
+    const startY = isReady(FLOAT_IMG) ? floatWaterY() + (FLOAT_EYE - FLOAT_WL) * FLOAT_H : surf;
+    c.moveTo(hook.bobX, startY);
     c.lineTo(x, y - 10);
     c.stroke();
     if (isReady(HOOK_IMG)) {
@@ -687,40 +727,109 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
   // petunjuk di samping kail
   function drawHookHint(c, x, y) {
-    c.font = '600 12px "JetBrains Mono", monospace';
-    c.textAlign = 'left';
-    c.textBaseline = 'middle';
+    let text, color, wiggle = 0;
     if (hook.caught && !hook.reeling) {
-      c.fillStyle = Math.sin(time * 0.2) > 0 ? '#ffd166' : '#fff';
-      c.fillText('click the hook → reel in! 🎣', x + 16, y);
+      text = W < 480 ? 'tap the hook → reel in! 🎣' : 'click the hook → reel in! 🎣';
+      color = Math.sin(time * 0.2) > 0 ? '#ffd166' : '#fff';
     } else if (!hook.used) {
-      c.fillStyle = 'rgba(255,255,255,.85)';
-      c.fillText('← drag my hook', x + 16 + Math.sin(time * 0.08) * 3, y);
+      text = 'drag my hook';
+      color = 'rgba(255,255,255,.85)';
+      wiggle = Math.sin(time * 0.08) * 3;
+    } else return;
+    c.font = `600 ${W < 480 ? 11 : 12}px "JetBrains Mono", monospace`;
+    c.textBaseline = 'middle';
+    c.fillStyle = color;
+    // di kanan kail kalau muat; kalau tidak (layar sempit / kail dekat tepi kanan) pindah ke kiri
+    const tw = c.measureText(text).width + 22;
+    if (x + 16 + tw < W - 8) {
+      c.textAlign = 'left';
+      c.fillText((hook.caught ? '' : '← ') + text, x + 16 + wiggle, y);
+    } else {
+      c.textAlign = 'right';
+      c.fillText(text + (hook.caught ? '' : ' →'), x - 16 - wiggle, y);
     }
   }
 
+  // tinggi garis air pelampung (naik-turun pelan; terhentak saat ikan menggigit)
+  const floatWaterY = () => surf + (hook.caught ? Math.sin(time * 0.6) * 4 + 4 : Math.sin(time * 0.06) * 1.5);
+
+  /*
+   * Pelampung dari gambar (src/assets.js → bobber). waterY = posisi garis air pada pelampung.
+   * submerged: bagian di bawah permukaan digambar samar (terendam). Mengembalikan titik ujung antena
+   * (tempat tali dari joran) & cincin bawah (tempat tali ke kail).
+   */
+  function drawFloatImage(c, x, waterY, submerged) {
+    const h = FLOAT_H;
+    const w = (h * FLOAT_IMG.naturalWidth) / FLOAT_IMG.naturalHeight;
+    const top = waterY - FLOAT_WL * h;
+    if (!submerged) {
+      c.drawImage(FLOAT_IMG, x - w / 2, top, w, h);
+    } else {
+      c.save();
+      c.beginPath();
+      c.rect(x - w, top - 4, w * 2, surf - top + 4);
+      c.clip();
+      c.drawImage(FLOAT_IMG, x - w / 2, top, w, h); // di atas air: jelas
+      c.restore();
+      c.save();
+      c.beginPath();
+      c.rect(x - w, surf, w * 2, h);
+      c.clip();
+      c.globalAlpha = 0.45;
+      c.drawImage(FLOAT_IMG, x - w / 2, top, w, h); // di bawah air: samar
+      c.restore();
+    }
+    return { top, eye: top + FLOAT_EYE * h };
+  }
+
+  function drawBobber(c, x, y) {
+    c.fillStyle = '#ff4d4d';
+    c.beginPath();
+    c.arc(x, y, 5, Math.PI, 0);
+    c.fill();
+    c.fillStyle = '#fff';
+    c.beginPath();
+    c.arc(x, y, 5, 0, Math.PI);
+    c.fill();
+    c.fillStyle = '#333';
+    c.fillRect(x - 0.75, y - 9, 1.5, 4);
+  }
+
   function drawHookAbove(c) {
-    if (!hook.visible || !hook.tip) return;
+    if (!hook.tip) return;
+    if (hook.cast === 'flying') {
+      // pelampung terbang melengkung dari ujung joran ke laut, tali ikut terulur
+      const { tip } = hook;
+      const p = Math.min(1, hook.castT / CAST_T);
+      const e = 1 - (1 - p) * (1 - p); // cepat di awal, melambat saat mendekati air
+      const img = isReady(FLOAT_IMG);
+      const endY = img ? surf : surf - 7; // titik garis air (gambar) / pusat bola (bawaan) saat mendarat
+      const tx = tip.x + (hook.landX - tip.x) * e;
+      const ty = tip.y + (endY - tip.y) * e - Math.sin(Math.PI * p) * 70;
+      // gambar dulu supaya tahu ujung antenanya, lalu tali ke ujung antena
+      const at = img ? drawFloatImage(c, tx, ty, false).top : ty;
+      if (!img) drawBobber(c, tx, ty);
+      c.strokeStyle = 'rgba(255,255,255,.75)';
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.moveTo(tip.x, tip.y);
+      c.quadraticCurveTo((tip.x + tx) / 2, Math.min(tip.y, at) - 10, tx, at);
+      c.stroke();
+      return;
+    }
+    if (!hook.visible) return;
     const { tip } = hook;
-    const by = surf - 7 + (hook.caught ? Math.sin(time * 0.6) * 4 + 4 : Math.sin(time * 0.06) * 1.5);
+    const waterY = floatWaterY();
+    const img = isReady(FLOAT_IMG);
+    const end = img ? drawFloatImage(c, hook.bobX, waterY, true).top : waterY - 7;
+    if (!img) drawBobber(c, hook.bobX, end);
     c.strokeStyle = 'rgba(255,255,255,.75)';
     c.lineWidth = 1.2;
     c.beginPath();
     c.moveTo(tip.x, tip.y);
     const sag = hook.caught || hook.dragging ? 0 : 26;
-    c.quadraticCurveTo((tip.x + hook.bobX) / 2, (tip.y + by) / 2 + sag, hook.bobX, by);
+    c.quadraticCurveTo((tip.x + hook.bobX) / 2, (tip.y + end) / 2 + sag, hook.bobX, end);
     c.stroke();
-    // pelampung
-    c.fillStyle = '#ff4d4d';
-    c.beginPath();
-    c.arc(hook.bobX, by, 5, Math.PI, 0);
-    c.fill();
-    c.fillStyle = '#fff';
-    c.beginPath();
-    c.arc(hook.bobX, by, 5, 0, Math.PI);
-    c.fill();
-    c.fillStyle = '#333';
-    c.fillRect(hook.bobX - 0.75, by - 9, 1.5, 4);
   }
 
   /* ------------------------------ PARALLAX ------------------------------ */
@@ -1103,9 +1212,13 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     burst(x, y, 10, Math.random() < 0.5);
   }
 
+  const viewportW = () => canvas.clientWidth || document.documentElement.clientWidth || window.innerWidth;
+
   function resize() {
     DPR = level >= 2 ? 1 : canvasDPR();
-    W = window.innerWidth;
+    // lebar TANPA scrollbar (sama dengan lebar kanvas di CSS). window.innerWidth ikut menghitung scrollbar,
+    // sehingga isi kanvas terskala & semua gambar (tali pancing, ikan, kail) bergeser beberapa px.
+    W = viewportW();
     H = LITE ? Math.max(window.innerHeight, canvas.clientHeight || 0) : window.innerHeight;
     canvas.width = Math.round(W * DPR);
     canvas.height = Math.round(H * DPR);
@@ -1128,7 +1241,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
   // di HP, address bar yang muncul/hilang saat scroll memicu resize kecil → abaikan
   const onResize = () => {
-    if (LITE && window.innerWidth === W && Math.abs(window.innerHeight - H) < 160) return;
+    if (LITE && viewportW() === W && Math.abs(window.innerHeight - H) < 160) return;
     resize();
   };
   window.addEventListener('resize', onResize);
@@ -1140,6 +1253,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   window.addEventListener('touchstart', onTouchStart, { passive: false });
   window.addEventListener('touchmove', onTouchMove, { passive: false });
   window.addEventListener('ocean:bubbles', onBubbles);
+  window.addEventListener('ocean:cast', onCast);
   raf = requestAnimationFrame(frame);
 
   return () => {
@@ -1153,6 +1267,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     window.removeEventListener('touchstart', onTouchStart);
     window.removeEventListener('touchmove', onTouchMove);
     window.removeEventListener('ocean:bubbles', onBubbles);
+    window.removeEventListener('ocean:cast', onCast);
     root.classList.remove('can-grab', 'grabbing');
   };
 }

@@ -72,8 +72,26 @@
     bottom: 16px;
     right: 14px;
     transform: none;
+    align-items: flex-end; /* jangan rata tengah: kotak angka tidak boleh keluar tepi layar */
   }
   .dm-track {
     display: none;
+  }
+}
+/* HP: kotak angka lebih ringkas supaya tidak berdempetan dengan badge tangkapan di kiri bawah */
+@media (max-width: 480px) {
+  .depth-meter {
+    bottom: 14px;
+    right: 12px;
+  }
+  .dm-readout {
+    min-width: 0;
+    padding: 5px 9px;
+  }
+  .dm-readout strong {
+    font-size: 0.8rem;
+  }
+  .dm-readout small {
+    font-size: 0.58rem;
   }
 }

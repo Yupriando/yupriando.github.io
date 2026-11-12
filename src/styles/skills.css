@@ -3,7 +3,7 @@
    ========================================================== */
 .skills-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 380px) 1fr;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
   gap: 36px;
   align-items: center;
 }
@@ -110,8 +110,8 @@
 
 .skill-cats {
   display: grid;
-  /* 300px → 4 kartu tersusun 2 × 2 di desktop, 1 kolom di HP */
-  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  /* maksimal 2 kolom (pasangan kartu tetap seimbang), 1 kolom kalau lebar < ±616px */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(300px, calc((100% - 16px) / 2))), 1fr));
   gap: 16px;
 }
 .skill-cat {
@@ -177,8 +177,15 @@
   gap: 8px;
 }
 
-@media (max-width: 960px) {
+/* tablet & HP: radar di atas (di tengah), kartu skill di bawah — tidak ada ruang kosong di samping radar */
+@media (max-width: 1100px) {
   .skills-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .sonar-wrap {
+    max-width: 380px;
+    width: 100%;
+    margin: 0 auto;
   }
 }

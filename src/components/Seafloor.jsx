@@ -56,6 +56,35 @@ export default function Seafloor() {
   };
   useEffect(() => () => clearTimeout(tipTimer.current), []);
 
+  /*
+   * Tata letak responsif TV & peti. SVG dasar laut "slice" (dipotong kiri-kanan di layar sempit),
+   * jadi posisi TV dihitung dari bagian dasar laut yang TERLIHAT, dan peti (HTML) memakai pembagian
+   * lebar yang sama → keduanya tidak pernah menumpuk di ukuran layar mana pun.
+   */
+  const [lay, setLay] = useState(null);
+  useEffect(() => {
+    const el = floorRef.current;
+    const calc = () => {
+      const w = el.clientWidth, h = el.clientHeight;
+      if (!w || !h) return;
+      const s = Math.max(w / 1440, h / 340); // skala viewBox → piksel (sama dengan preserveAspectRatio slice)
+      const vis = w / s; // lebar dasar laut yang terlihat (satuan viewBox)
+      const [tvF, chestF] = w < 640 ? [0.3, 0.74] : w < 1100 ? [0.4, 0.76] : [0.62, 0.82];
+      // < 1240px area tombol & copyright di bawah lebih tinggi → TV & peti naik ke bukit belakang supaya tidak tertutup
+      const groundY = w < 1240 ? 205 : 262;
+      setLay({ x0: 720 - vis / 2, vis, s, tvF, chestF, groundY });
+    };
+    calc();
+    const ro = new ResizeObserver(calc);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const tvX = lay ? lay.x0 + lay.vis * lay.tvF - 60 : 872; // TV lebar 120 → dikurangi 60 supaya tengahnya pas
+  const tvY = lay ? lay.groundY - 98 : 164; // TV tinggi ±106, kakinya sedikit terbenam di tanah
+  const chestStyle = lay
+    ? { left: `${lay.chestF * 100}%`, right: 'auto', bottom: `${Math.round((340 - lay.groundY) * lay.s)}px`, transform: 'translateX(-50%)' }
+    : undefined;
+
   const toggleChest = () => {
     const next = !open;
     setOpen(next);
@@ -97,7 +126,7 @@ export default function Seafloor() {
         )}
         {TV ? (
           // TV tua yang tenggelam: layar (di belakang) terlihat lewat lubang kaca di gambar TV
-          <g transform="translate(872 164) rotate(-4 60 53)">
+          <g transform={`translate(${tvX.toFixed(1)} ${tvY}) rotate(-4 60 53)`}>
             <defs>
               <radialGradient id="tv-glow" cx="50%" cy="50%" r="65%">
                 <stop offset="0" stopColor="#0d4a2a" />
@@ -162,7 +191,7 @@ export default function Seafloor() {
         />
       </svg>
 
-      <div className={`chest-area${CHEST ? ' chest-area-img' : ''}`}>
+      <div className={`chest-area${CHEST ? ' chest-area-img' : ''}`} style={chestStyle}>
         <AnimatePresence>
           {open && (
             <motion.a

@@ -335,12 +335,15 @@ export const assets = {
     bucket: [0.27, 0.6],
     // pemancing (gambar terpisah, duduk di belakang dinding kapal). Satuan: proporsi lebar/tinggi kapal
     //   x, w   : posisi kiri & lebar (proporsi lebar kapal); bottom : tepi bawah (proporsi tinggi kapal)
-    //   ratio  : tinggi/lebar gambar; tip / pivot : ujung joran & tangan pada gambar (0–1)
+    //   tip / pivot : ujung joran & tangan pada gambar (0–1); titik tali otomatis ikut gambar
     //   bend   : derajat condong ke depan saat ikan menarik
-    fisher: { src: 'assets/kapal/pemancing.webp', x: 0.06, bottom: 0.7, w: 0.28, ratio: 0.924, tip: [0.004, 0], pivot: [0.45, 0.62], bend: -9 },
+    fisher: { src: 'assets/kapal/pemancing.webp', x: 0, bottom: 0.65, w: 0.28, tip: [0.004, 0.002], pivot: [0.45, 0.62], bend: -9 },
     // anjing di dek (menggantikan kucing)
     dog: { src: 'assets/kapal/anjing.webp', x: 0.47, bottom: 0.66, w: 0.125 },
   },
   // kail + umpan cacing di dalam air. height: tinggi gambar (px), eye: posisi mata kail (tempat tali) 0–1
   hook: { src: 'assets/kapal/kail.webp', height: 30, eye: [0.777, 0.02] },
+  // pelampung. height: tinggi (px); waterline: garis air pada gambar (0–1, bagian bawahnya terendam);
+  // eye: posisi cincin bawah (tempat tali ke kail). Kosongkan = bola merah-putih bawaan
+  bobber: { src: 'assets/kapal/pelampung.webp', height: 36, waterline: 0.575, eye: 0.965 },
 };

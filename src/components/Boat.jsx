@@ -4,32 +4,11 @@ import { boatLines } from '../data';
 import { assets } from '../assets';
 import { assetUrl } from '../ocean/images';
 
-/*
- * Posisi ujung joran dari gambar pemancing (src/assets.js → boat.fisher), dalam proporsi kotak kapal.
- * Saat strike, pemancing berputar `bend` derajat di titik `pivot` (tangan) → ujung joran ikut bergeser.
- */
-function fisherTip(b, bent) {
-  const f = b.fisher;
-  const rb = b.ratio; // tinggi/lebar gambar kapal
-  const fh = f.w * f.ratio; // tinggi pemancing dalam satuan lebar kapal
-  const top = f.bottom * rb - fh; // tepi atas pemancing (satuan lebar kapal)
-  const toBoat = ([px, py]) => [f.x + px * f.w, top + py * fh];
-  let [tx, ty] = toBoat(f.tip);
-  if (bent && f.bend) {
-    const [cx, cy] = toBoat(f.pivot);
-    const a = (f.bend * Math.PI) / 180;
-    const dx = tx - cx, dy = ty - cy;
-    tx = cx + dx * Math.cos(a) - dy * Math.sin(a);
-    ty = cy + dx * Math.sin(a) + dy * Math.cos(a);
-  }
-  return [tx, ty / rb]; // y kembali ke proporsi tinggi kapal
-}
-
 /* Kapal dari gambar sendiri (src/assets.js → boat), bisa berlapis: pemancing & anjing di belakang lambung */
-function CustomBoat({ bent, onRatio, onError }) {
+function CustomBoat({ bent, casting, onRatio, onError }) {
   const b = assets.boat;
-  const f = b.fisher?.src && b.ratio ? b.fisher : null;
-  const tip = f ? fisherTip(b, bent) : bent && b.rodTipBent ? b.rodTipBent : b.rodTip || [0.08, 0.1];
+  const f = b.fisher?.src ? b.fisher : null;
+  const tip = bent && b.rodTipBent ? b.rodTipBent : b.rodTip || [0.08, 0.1];
   const bucket = b.bucket || [0.55, 0.6];
   const pos = ([x, y]) => ({ left: `${x * 100}%`, top: `${y * 100}%` });
   const layer = (l) => ({ left: `${l.x * 100}%`, bottom: `${(1 - l.bottom) * 100}%`, width: `${l.w * 100}%` });
@@ -37,17 +16,20 @@ function CustomBoat({ bent, onRatio, onError }) {
     <div className="boat boat-custom">
       {/* lapisan di belakang lambung: kaki pemancing & anjing tertutup dinding kapal */}
       {f && (
-        <img
-          className="boat-fisher"
-          src={assetUrl(f.src)}
-          alt=""
-          draggable={false}
-          style={{
-            ...layer(f),
-            transformOrigin: `${f.pivot[0] * 100}% ${f.pivot[1] * 100}%`,
-            transform: bent && f.bend ? `rotate(${f.bend}deg)` : 'none',
-          }}
-        />
+        // luar: posisi + animasi lompat (cheer); dalam: condong saat strike.
+        // Titik #rod-tip ada DI DALAM wadah yang sama dengan gambar → selalu menempel di ujung joran.
+        <div className="boat-fisher" style={layer(f)}>
+          <div
+            className={`boat-fisher-rot${casting ? " cast" : ""}`}
+            style={{
+              transformOrigin: `${f.pivot[0] * 100}% ${f.pivot[1] * 100}%`,
+              transform: bent && f.bend ? `rotate(${f.bend}deg)` : 'none',
+            }}
+          >
+            <img src={assetUrl(f.src)} alt="" draggable={false} />
+            <span id="rod-tip" className="boat-anchor fixed" style={pos(f.tip)} />
+          </div>
+        </div>
       )}
       {b.dog?.src && <img className="boat-dog" src={assetUrl(b.dog.src)} alt="" draggable={false} style={layer(b.dog)} />}
       <img
@@ -59,7 +41,7 @@ function CustomBoat({ bent, onRatio, onError }) {
         onError={onError}
       />
       {/* titik bantu: ujung joran (untuk tali pancing) & ember (tujuan ikan hasil pancingan) */}
-      <span id="rod-tip" className="boat-anchor" style={pos(tip)} />
+      {!f && <span id="rod-tip" className="boat-anchor" style={pos(tip)} />}
       <span id="boat-bucket" className="boat-anchor" style={pos(bucket)} />
     </div>
   );
@@ -141,6 +123,22 @@ export default function Boat({ style }) {
   const rod = bent ? ROD.bent : ROD.idle;
   const rodTransition = { type: 'spring', stiffness: 160, damping: 12 };
 
+  // lemparan pembuka: setelah kapal berhenti, pemancing mengayun joran → kail dilempar ke laut
+  const [casting, setCasting] = useState(false);
+  const casted = useRef(false);
+  const castTimers = useRef([]);
+  const startCast = () => {
+    if (casted.current) return;
+    casted.current = true;
+    setCasting(true);
+    castTimers.current = [
+      // ayunan ke depan (±48% animasi "cast" di hero.css) = saat pelampung lepas dari joran
+      setTimeout(() => window.dispatchEvent(new CustomEvent('ocean:cast')), 430),
+      setTimeout(() => setCasting(false), 950),
+    ];
+  };
+  useEffect(() => () => castTimers.current.forEach(clearTimeout), []);
+
   return (
     <motion.div
       className="boat-wrap"
@@ -148,6 +146,7 @@ export default function Boat({ style }) {
       initial={{ x: '45vw', opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 2.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      onAnimationComplete={startCast}
     >
       <AnimatePresence>
         {line && (
@@ -166,7 +165,7 @@ export default function Boat({ style }) {
 
       <button className={`boat-btn${cheer ? ' cheer' : ''}${bent ? ' fight' : ''}`} onClick={talk} aria-label="Chat with the fisherman">
         {custom ? (
-          <CustomBoat bent={bent} onRatio={setRatio} onError={onBoatError} />
+          <CustomBoat bent={bent} casting={casting} onRatio={setRatio} onError={onBoatError} />
         ) : (
         <svg className="boat" viewBox="0 0 320 230" overflow="visible" aria-hidden="true">
           <defs>

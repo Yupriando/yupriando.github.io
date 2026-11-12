@@ -323,9 +323,14 @@ html.lite .glass {
   background: rgba(8, 30, 56, 0.82);
   box-shadow: none;
 }
-html.lite .nav.scrolled,
-html.lite .nav-links {
+html.lite .nav.scrolled {
   background: rgba(3, 18, 38, 0.94);
+}
+/* latar solid hanya untuk menu dropdown HP; di tablet sentuh yang lebar link tampil biasa tanpa kotak */
+@media (max-width: 860px) {
+  html.lite .nav-links {
+    background: rgba(3, 18, 38, 0.94);
+  }
 }
 html.lite .toast,
 html.lite .dm-readout,
