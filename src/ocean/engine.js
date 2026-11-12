@@ -85,24 +85,27 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     init: false, visible: false, dragging: false, reeling: false,
     caught: null, biteTime: 0, idle: 999, cooldown: 0, used: false, tip: null,
     // lemparan: 'waiting' (kail tergantung di joran) → 'flying' (pelampung melayang) → 'done' (di air)
-    // → 'reelup' (digulung pelan ke joran setelah ikan diangkat / kapal keluar layar) → 'waiting' lagi
+    // → 'carry' (ikan terangkat ke kapal masih tersangkut di kail) → 'reelup' (kail kembali pelan ke joran;
+    //   juga saat kapal keluar layar / satwa dilindungi dilepas) → 'waiting' lagi
     cast: 'waiting', castT: 0, castWait: 0, landX: 0,
     away: false, // kapal/joran sedang di luar layar → kail digulung naik, dilempar lagi saat kapal terlihat
-    needReady: false, castQueued: false, reelX: 0,
+    needReady: false, castQueued: false, reelX: 0, reelAt: null, reelDur: 0,
+    carry: null, // lemparan ikan yang sedang terangkat bersama kail (state 'carry')
   };
   const CAST_T = 44; // lama pelampung melayang (frame, ±0,7 detik)
   const REEL_T = 72; // lama kail digulung naik ke joran (frame, ±1,2 detik)
 
   // mulai menggulung kail dari posisi pelampung di air ke ujung joran
-  function startReel() {
+  function startReel(x = hook.bobX, at = null, dur = REEL_T) {
     hook.cast = 'reelup';
     hook.castT = 0;
-    hook.reelX = hook.bobX;
-    hook.castQueued = false;
+    hook.reelX = x;
+    hook.reelAt = at; // null = dari permukaan air
+    hook.reelDur = dur;
     hook.visible = false;
   }
   function advanceReel(dt) {
-    if ((hook.castT += dt) < REEL_T) return;
+    if ((hook.castT += dt) < hook.reelDur) return;
     hook.cast = 'waiting';
     hook.castWait = 0;
     if (hook.castQueued) {
@@ -116,7 +119,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
   // dipicu Boat.jsx saat si pemancing mengayunkan joran (setelah kapal berhenti, dan lagi setiap habis menarik ikan)
   const onCast = () => {
-    if (hook.cast === 'reelup') { hook.castQueued = true; return; } // lempar begitu selesai digulung
+    // lempar begitu kail kembali ke joran
+    if (hook.cast === 'reelup' || hook.cast === 'carry') { hook.castQueued = true; return; }
     if (hook.cast !== 'waiting') return;
     // kapal tidak terlihat → kail tetap tergantung; dilempar saat kapal terlihat lagi (event "ready")
     if (hook.away || !hook.tip || surf < 60 || surf > H - 70) return;
@@ -585,8 +589,6 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     root.classList.remove('grabbing');
     f.hooked = false;
     splash(f.x, surf, 14);
-    // kail digulung pelan ke joran → lalu dilempar ulang oleh pemancing (Boat.jsx, event "ocean:cast")
-    startReel();
 
     if (f.sp.protect) {
       // satwa dilindungi: langsung dilepas lagi
@@ -594,6 +596,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       f.curious = false;
       f.y = surf + f.size;
       f.vy = 3;
+      hook.castQueued = false;
+      startReel(); // kail kosong digulung pelan dari air → lalu dilempar ulang (Boat.jsx, "ocean:cast")
       const msg = f.type === 'turtle' ? '🐢 Sea turtles are protected! Letting it go~' : '🦈 Sharks are protected! Letting it go, careful~';
       toast(msg);
       emit('release', { name: f.sp.name, msg });
@@ -603,14 +607,24 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     f.dead = true;
     const bucket = document.getElementById('boat-bucket');
     const r = bucket ? bucket.getBoundingClientRect() : null;
-    flights.push({
+    // ikan terangkat ke ember MASIH tersangkut di kail: titik yang terbang = mata kail, ikan menggantung di bawahnya
+    const hang = f.size * 0.42;
+    const fl = {
       f,
       t: 0,
-      x0: f.x,
+      x0: hook.x,
       y0: surf - 4,
       x1: r ? r.left + r.width / 2 : hook.tip.x + 120,
-      y1: r ? r.top + r.height / 2 : hook.tip.y + 60,
-    });
+      y1: (r ? r.top + r.height / 2 : hook.tip.y + 60) - hang,
+      hang,
+      hx: hook.x,
+      hy: surf - 4,
+    };
+    flights.push(fl);
+    hook.cast = 'carry';
+    hook.carry = fl;
+    hook.castQueued = false;
+    hook.visible = false;
   }
 
   function finishFlight(fl) {
@@ -666,7 +680,9 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     // kail belum dilempar: belum ada di air (tidak digambar & ikan tidak bisa menggigit)
     if (hook.cast !== 'done') {
       hook.visible = false;
-      if (hook.cast === 'reelup') {
+      if (hook.cast === 'carry') {
+        // ditangani oleh lemparan ikan (lihat update flights)
+      } else if (hook.cast === 'reelup') {
         advanceReel(dt);
       } else if (hook.cast === 'waiting') {
         hook.castWait += dt;
@@ -895,13 +911,45 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
 
   function drawHookAbove(c) {
     if (!hook.tip) return;
+    if (hook.cast === 'carry' && hook.carry) {
+      // ikan terangkat: tali tegang dari joran ke pelampung, lalu ke kail yang tersangkut di mulut ikan
+      const { tip } = hook;
+      const { hx, hy } = hook.carry;
+      const len = Math.hypot(hx - tip.x, hy - tip.y) || 1;
+      const d = Math.min(46, len * 0.45); // pelampung beberapa cm di atas kail
+      const img = isReady(FLOAT_IMG);
+      const fh = floatH();
+      const span = img ? FLOAT_EYE * fh : 14; // antena → cincin bawah
+      const bx = hx + ((tip.x - hx) / len) * d;
+      const at = hy + ((tip.y - hy) / len) * d - span / 2;
+      hook.carry.bx = bx; // diingat → kail kembali ke joran mulai dari posisi pelampung terakhir
+      hook.carry.bat = at;
+      c.strokeStyle = 'rgba(255,255,255,.8)';
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.moveTo(tip.x, tip.y);
+      c.lineTo(bx, at);
+      c.stroke();
+      let eyeY;
+      if (img) eyeY = drawFloatImage(c, bx, at + FLOAT_WL * fh, false).eye;
+      else {
+        drawBobber(c, bx, at + 9);
+        eyeY = at + 14;
+      }
+      c.beginPath();
+      c.moveTo(bx, eyeY);
+      c.lineTo(hx, hy);
+      c.stroke();
+      drawHookAt(c, hx, hy, Math.atan2(hx - bx, hy - eyeY) * -1);
+      return;
+    }
     if (hook.cast === 'reelup') {
       // digulung: pelampung + kail naik pelan dari air ke ujung joran, tali memendek, sedikit berayun
       if (surf < 60 || surf > H - 70) return;
       const { tip } = hook;
-      const p = Math.min(1, hook.castT / REEL_T);
+      const p = Math.min(1, hook.castT / (hook.reelDur || REEL_T));
       const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; // pelan → cepat → pelan
-      const startAt = isReady(FLOAT_IMG) ? surf - FLOAT_WL * floatH() : surf - 16;
+      const startAt = hook.reelAt ?? (isReady(FLOAT_IMG) ? surf - FLOAT_WL * floatH() : surf - 16);
       const endAt = tip.y + 8;
       const x = hook.reelX + (tip.x - hook.reelX) * e;
       const at = startAt + (endAt - startAt) * e - Math.sin(Math.PI * p) * 10;
@@ -1201,13 +1249,23 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     for (const fl of flights) {
       fl.t += dt / 55;
       const t = Math.min(1, fl.t);
-      fl.f.x = lerp(fl.x0, fl.x1, t);
-      fl.f.y = lerp(fl.y0, fl.y1, t) - Math.sin(t * Math.PI) * 130;
-      fl.f.angle += 0.25 * dt;
-      fl.f.phase += 0.9 * dt;
+      // mata kail terangkat melengkung ke ember; ikan menggantung dari mulutnya, berayun & menggelepar
+      fl.hx = lerp(fl.x0, fl.x1, t);
+      fl.hy = lerp(fl.y0, fl.y1, t) - Math.sin(t * Math.PI) * 130;
+      const a = -Math.PI / 2 + Math.sin(t * Math.PI * 4) * 0.45 * (1 - t * 0.6);
+      fl.f.angle = a;
+      fl.f.x = fl.hx - Math.cos(a) * fl.hang;
+      fl.f.y = fl.hy - Math.sin(a) * fl.hang;
+      fl.f.vx = fl.x1 >= fl.x0 ? 1 : -1;
+      fl.f.phase += 1.4 * dt;
       if (fl.t >= 1) {
         fl.dead = true;
         finishFlight(fl);
+        if (hook.carry === fl) {
+          // ikan dilepas ke ember → kail kosong berayun pendek kembali ke ujung joran
+          hook.carry = null;
+          startReel(fl.bx ?? fl.hx, fl.bat ?? fl.hy - 8 - FLOAT_EYE * floatH(), 40);
+        }
       }
     }
     sweep(fishes); sweep(jellies); sweep(bubbles); sweep(foods); sweep(drops); sweep(flights);
