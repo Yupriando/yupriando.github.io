@@ -189,14 +189,17 @@ export const projects = [
   },
   {
     repo: "BulkIn",
+    thumb: "assets/proyek/bulkin.webp", // tampilan proyek (16:9)
     title: "BulkIn",
     cat: "mobile",
     emoji: "💪",
     theme: "m1",
     desc: "An Android app for bulking programs: log daily meals, calories, protein, and body weight. Just pick a food and enter its weight, and the rest is calculated automatically.",
     tags: ["Flutter", "Express", "Supabase", "Claude API"],
-    demo: "https://bulk-in.vercel.app/docs",
-    demoType: "api",
+    demo: "https://bulkin-app.vercel.app/", // versi web Flutter (Vercel; /api diteruskan ke backend bulk-in.vercel.app)
+    demoType: "app",
+    demoMobile: true,
+    demoLogin: { email: "demo@bulkin.app", password: "bulkin-demo" }, // akun demo bersama, sudah berisi data contoh
   },
   {
     repo: "Bebaca",
@@ -224,12 +227,17 @@ export const projects = [
   },
   {
     repo: "Savely",
+    thumb: "assets/proyek/savely.webp", // tampilan proyek (16:9)
     title: "Savely",
     cat: "mobile",
     emoji: "💰",
     theme: "m4",
-    desc: "A mobile app that helps you manage your savings and spending.",
+    desc: "A mobile app that helps you manage your savings and spending: multiple wallets, monthly budgets, bills, wishlist savings goals, and reports with spending insights.",
     tags: ["Flutter", "Riverpod", "TypeScript", "Supabase"],
+    demo: "https://savely-app-six.vercel.app/", // versi web Flutter (Vercel), backend savely-api.vercel.app
+    demoType: "app",
+    demoMobile: true,
+    demoLogin: { email: "demo@savely.app", password: "savely-demo" }, // akun demo bersama, sudah berisi data contoh
   },
   {
     repo: "WSpeedrun-Microservices",
