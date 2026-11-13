@@ -13,6 +13,7 @@ export default function DemoModal({ project, onClose }) {
   const [loaded, setLoaded] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [pane, setPane] = useState(0); // tampilan terbagi di layar sempit: panel yang sedang dilihat
+  const [real, setReal] = useState(false); // panel layar besar: demo langsung / foto layar di acara sungguhan
   const split = project?.demoSplit; // dua halaman berdampingan (mis. kamera HP + layar besar)
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export default function DemoModal({ project, onClose }) {
     setLoaded(false);
     setMobile(!!project.demoMobile); // aplikasi HP langsung tampil dalam bingkai ponsel
     setPane(0);
+    setReal(false);
     const onKey = (e) => e.key === 'Escape' && onClose();
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -107,7 +109,30 @@ export default function DemoModal({ project, onClose }) {
                 </div>
                 <div className={`split-pane wide${pane === 1 ? ' on' : ''}`}>
                   <span className="split-label mono">{split.label}</span>
-                  <iframe key={split.url} src={split.url} title={`${project.title}: ${split.label}`} allow="autoplay; fullscreen" />
+                  {split.real && (
+                    <div className="split-switch" role="tablist" aria-label="Big screen view">
+                      <button role="tab" aria-selected={!real} className={real ? '' : 'on'} onClick={() => setReal(false)}>
+                        Live demo
+                      </button>
+                      <button role="tab" aria-selected={real} className={real ? 'on' : ''} onClick={() => setReal(true)}>
+                        Real event
+                      </button>
+                    </div>
+                  )}
+                  {/* iframe demo tetap berjalan saat foto acara ditampilkan (foto yang dikirim tetap masuk) */}
+                  <iframe
+                    key={split.url}
+                    src={split.url}
+                    title={`${project.title}: ${split.label}`}
+                    allow="autoplay; fullscreen"
+                    style={real ? { visibility: 'hidden' } : undefined}
+                  />
+                  {split.real && real && (
+                    <figure className="split-real">
+                      <img src={split.real.img} alt={split.real.alt} />
+                      <figcaption>{split.real.caption}</figcaption>
+                    </figure>
+                  )}
                 </div>
               </div>
             ) : (

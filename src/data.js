@@ -168,14 +168,23 @@ export const projects = [
     cat: "web",
     emoji: "📸",
     theme: "m2",
-    desc: "An event photo wall: guests snap photos with color filters, the shots appear instantly on the big screen as a scrolling ticker, and admins moderate everything from a dashboard.",
+    desc: "An event photo wall: guests snap photos with color filters, the shots appear instantly on the big screen as a scrolling ticker, and admins moderate everything from a dashboard. Used live at Hapkido Gathering 2026, with 127 photos from guests.",
     tags: ["HTML", "JavaScript", "Camera"],
     // mode demo (?demo=1): foto tidak diunggah ke database acara, hanya tampil di layar demo di browser pengunjung
     demo: "https://hapki-snap.vercel.app/?demo=1",
     demoType: "app",
     demoLabel: "📱 Guest phone",
-    demoSplit: { label: "🖥️ Big screen", url: "https://hapki-snap.vercel.app/display.html?demo=1" },
-    demoNote: "Check in, snap a photo and post it: it lands on the big screen on the right. Demo mode, photos stay in your browser.",
+    demoSplit: {
+      label: "🖥️ Big screen",
+      url: "https://hapki-snap.vercel.app/display.html?demo=1",
+      // screenshot layar di acara sungguhan (wajah & nama tamu di-blur)
+      real: {
+        img: "assets/proyek/hapki-snap-event.webp",
+        alt: "The real HapkiSnap wall at Hapkido Gathering 2026, guest faces and names blurred",
+        caption: "Hapkido Gathering 2026 · 25 Oct 2026 · 127 photos posted by guests (faces & names blurred for privacy)",
+      },
+    },
+    demoNote: "Used for real at Hapkido Gathering 2026 (127 photos, see \"Real event\"). Try it: check in, snap a photo and post it, it lands on the big screen. Demo mode, photos stay in your browser.",
   },
   {
     repo: "BulkIn",
