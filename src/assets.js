@@ -342,7 +342,8 @@ export const assets = {
     dog: { src: 'assets/kapal/anjing.webp', x: 0.47, bottom: 0.66, w: 0.125 },
   },
   // kail + umpan cacing di dalam air. height: tinggi gambar (px), eye: posisi mata kail (tempat tali) 0–1
-  hook: { src: 'assets/kapal/kail.webp', height: 30, eye: [0.777, 0.02] },
+  // bare: kail yang sama TANPA cacing (dipakai setelah umpannya dimakan ikan; ukuran & posisi gambar harus sama)
+  hook: { src: 'assets/kapal/kail.webp', bare: 'assets/kapal/kail-kosong.webp', height: 30, eye: [0.777, 0.02] },
   // pelampung. height: tinggi (px); waterline: garis air pada gambar (0–1, bagian bawahnya terendam);
   // eye: posisi cincin bawah (tempat tali ke kail). Kosongkan = bola merah-putih bawaan
   bobber: { src: 'assets/kapal/pelampung.webp', height: 36, waterline: 0.575, eye: 0.965 },
