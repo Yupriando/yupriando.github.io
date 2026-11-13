@@ -85,7 +85,9 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     x: 0, y: 0, tx: 0, ty: 0, bobX: 0,
     init: false, visible: false, dragging: false, reeling: false,
     caught: null, biteTime: 0, idle: 999, cooldown: 0, used: false, tip: null,
-    baited: true, // masih ada cacingnya? hilang saat ikan menggigit, dipasang lagi setiap kail dilempar
+    // umpan cacing: 1 = terpasang, 0 = habis dimakan ikan. Dipasang lagi pelan-pelan (0 → 1) saat kail
+    // tergantung di ujung joran, baru setelah itu kail dilempar (castAfterBait = lemparan menunggu umpan)
+    bait: 1, baitT: 0, castAfterBait: false,
     // lemparan: 'waiting' (kail tergantung di joran) → 'flying' (pelampung melayang) → 'done' (di air)
     // → 'carry' (ikan terangkat ke kapal masih tersangkut di kail) → 'reelup' (kail kembali pelan ke joran;
     //   juga saat kapal keluar layar / satwa dilindungi dilepas) → 'waiting' lagi
@@ -96,6 +98,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   };
   const CAST_T = 44; // lama pelampung melayang (frame, ±0,7 detik)
   const REEL_T = 72; // lama kail digulung naik ke joran (frame, ±1,2 detik)
+  const BAIT_DELAY = 8; // jeda setelah kail sampai di joran sebelum cacing dipasang (frame)
+  const BAIT_T = 28; // lama memasang cacing baru (frame, ±0,5 detik)
 
   // mulai menggulung kail dari posisi pelampung di air ke ujung joran
   function startReel(x = hook.bobX, at = null, dur = REEL_T) {
@@ -126,9 +130,13 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     if (hook.cast !== 'waiting') return;
     // kapal tidak terlihat → kail tetap tergantung; dilempar saat kapal terlihat lagi (event "ready")
     if (hook.away || !hook.tip || surf < 60 || surf > H - 70) return;
+    if (hook.bait < 1) {
+      hook.castAfterBait = true; // cacing baru belum selesai dipasang → dilempar sesudahnya
+      return;
+    }
+    hook.castAfterBait = false;
     hook.cast = 'flying';
     hook.castT = 0;
-    hook.baited = true; // cacing baru setiap kali dilempar
     hook.landX = hook.tip.x - 48; // jatuh sedikit di depan joran, lalu terseret pelan ke posisi menunggu
   };
 
@@ -260,7 +268,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       }
 
       // tertarik umpan di kail
-      if (hook.visible && hook.baited && !hook.caught && !hook.dragging && hook.cooldown <= 0 && this.curious && !this.leaving) {
+      if (hook.visible && hook.bait >= 1 && !hook.caught && !hook.dragging && hook.cooldown <= 0 && this.curious && !this.leaving) {
         const dx = hook.x - this.x, dy = hook.y - this.y;
         const d = Math.hypot(dx, dy) || 1;
         if (d < 230) {
@@ -560,7 +568,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     f.hooked = true;
     f.pull = Math.random() < 0.5 ? -1 : 1;
     hook.caught = f;
-    hook.baited = false; // cacingnya dimakan, ikan tersangkut di mata kail
+    hook.bait = 0; // cacingnya dimakan, ikan tersangkut di mata kail
+    hook.baitT = 0;
     hook.biteTime = 0;
     hook.reeling = false;
     bites++;
@@ -654,6 +663,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   function reelAway(dt) {
     if (hook.caught) escape(false); // kapal keluar layar: penggulungan diurus di bawah
     hook.dragging = false;
+    hook.bait = 1; // umpan dipasang lagi selagi kapal tak terlihat
+    hook.castAfterBait = false;
     if (!hook.away) {
       hook.away = true;
       hook.needReady = true;
@@ -676,6 +687,12 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     hook.tip = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     // ujung joran tertutup / keluar dari atas layar → anggap kapal tidak terlihat
     if (hook.tip.y < 70) return reelAway(dt);
+    if (hook.bait < 1 && hook.cast === 'waiting') {
+      // jeda sebentar setelah kail sampai di joran, lalu cacing baru dipasang (muncul pelan)
+      hook.baitT += dt;
+      if (hook.baitT > BAIT_DELAY) hook.bait = Math.min(1, hook.bait + dt / BAIT_T);
+      if (hook.bait >= 1 && hook.castAfterBait) onCast();
+    }
     if (hook.away) {
       // kapal terlihat lagi → minta pemancing melempar kail (Boat.jsx)
       hook.away = false;
@@ -713,7 +730,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     hook.visible = surf > 60 && surf < H - 70 && r.width >= 0;
     if (!hook.visible) {
       if (hook.caught) escape(false);
-      hook.baited = true; // kail tak terlihat (di-scroll): umpannya dipasang lagi diam-diam
+      hook.bait = 1; // kail tak terlihat (di-scroll): umpannya dipasang lagi diam-diam
       hook.dragging = false;
       return;
     }
@@ -773,20 +790,33 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     c.stroke();
     if (isReady(HOOK_IMG)) {
       // kail + cacing dari gambar: mata kail tepat di ujung tali, bergoyang pelan terbawa arus
-      const img = hookImage();
-      const h = hookH();
-      const w = (h * img.naturalWidth) / img.naturalHeight;
       c.save();
       c.translate(x, y - 10);
       c.rotate(Math.sin(time * 0.05) * 0.12 + (hook.caught ? Math.sin(time * 0.4) * 0.15 : 0));
-      c.drawImage(img, -HOOK_EYE[0] * w, -HOOK_EYE[1] * h, w, h);
+      paintHook(c);
       c.restore();
     } else drawHookShape(c, x, y);
     drawHookHint(c, x, y);
   }
 
-  // gambar kail sesuai umpan: dengan cacing, atau kosong setelah cacingnya dimakan
-  const hookImage = () => (!hook.baited && isReady(HOOK_BARE_IMG) ? HOOK_BARE_IMG : HOOK_IMG);
+  // gambar kail sesuai umpan (mata kail di titik 0,0): dengan cacing, kosong setelah cacingnya dimakan,
+  // atau cacing yang perlahan muncul saat sedang dipasang lagi
+  function paintHook(c) {
+    const h = hookH();
+    const w = (h * HOOK_IMG.naturalWidth) / HOOK_IMG.naturalHeight;
+    const dx = -HOOK_EYE[0] * w, dy = -HOOK_EYE[1] * h;
+    if (hook.bait >= 1 || !isReady(HOOK_BARE_IMG)) {
+      c.drawImage(HOOK_IMG, dx, dy, w, h);
+      return;
+    }
+    c.drawImage(HOOK_BARE_IMG, dx, dy, w, h);
+    if (hook.bait > 0) {
+      const a = c.globalAlpha;
+      c.globalAlpha = a * hook.bait;
+      c.drawImage(HOOK_IMG, dx, dy, w, h);
+      c.globalAlpha = a;
+    }
+  }
 
   // kail bawaan (garis) + cacing, dipakai kalau gambar kail tidak ada
   function drawHookShape(c, x, y) {
@@ -801,7 +831,7 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
     c.lineTo(x - 10, y - 1);
     c.stroke();
     // umpan cacing
-    if (hook.baited) {
+    if (hook.bait > 0.5) {
       c.strokeStyle = '#ff8fa3';
       c.lineWidth = 3;
       c.beginPath();
@@ -888,13 +918,10 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
   // kail + cacing dengan mata kail di (ex, ey); rot = kemiringan (radian)
   function drawHookAt(c, ex, ey, rot) {
     if (isReady(HOOK_IMG)) {
-      const img = hookImage();
-      const h = hookH();
-      const w = (h * img.naturalWidth) / img.naturalHeight;
       c.save();
       c.translate(ex, ey);
       c.rotate(rot);
-      c.drawImage(img, -HOOK_EYE[0] * w, -HOOK_EYE[1] * h, w, h);
+      paintHook(c);
       c.restore();
     } else drawHookShape(c, ex, ey + 10);
   }
@@ -991,7 +1018,8 @@ export function createOcean(canvas, { toast = () => {} } = {}) {
       c.moveTo(tip.x, tip.y);
       c.lineTo(x, at);
       c.stroke();
-      drawRig(c, x, at, sway * 1.4);
+      const baiting = hook.bait < 1 && hook.baitT > BAIT_DELAY * 0.5 ? Math.sin(time * 0.9) * 0.2 : 0;
+      drawRig(c, x, at, sway * 1.4 + baiting);
       return;
     }
     if (hook.cast === 'flying') {
