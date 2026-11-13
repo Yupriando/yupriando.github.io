@@ -193,8 +193,11 @@ export const projects = [
     theme: "m5",
     desc: "A reading-practice app for kids. Flutter frontend, Node.js + Express backend, with Supabase (Postgres + Auth) as the database.",
     tags: ["Flutter", "Node.js", "Supabase"],
-    demo: "https://bebaca.vercel.app/docs/",
-    demoType: "api",
+    demo: "https://bebaca-app.vercel.app/", // versi web Flutter (build/web, di-deploy ke Vercel)
+    demoType: "app",
+    demoMobile: true, // buka langsung dalam bingkai ponsel
+    demoLogin: { email: "demo@bebaca.app", password: "bebaca-demo" }, // akun demo bersama untuk pengunjung
+    apk: "https://github.com/Yupriando/Bebaca/raw/main/release/Bebaca-v1.0.0.apk", // tombol "APK ↓" di kartu
   },
   {
     repo: "NoteNook",

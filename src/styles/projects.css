@@ -328,6 +328,14 @@
 .demo-hint a {
   color: var(--accent);
 }
+/* email & password akun demo: mudah dibaca dan disalin */
+.demo-cred {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(92, 225, 230, 0.12);
+  color: #fff;
+  user-select: all;
+}
 
 @media (max-width: 640px) {
   .demo-backdrop {

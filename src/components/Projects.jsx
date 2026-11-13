@@ -97,6 +97,11 @@ export default function Projects() {
                           {(([ic, label]) => <><Icon name={ic} /> {label}</>)(TRY_LABEL[p.demoType] || TRY_LABEL.app)}
                         </button>
                       )}
+                      {p.apk && (
+                        <a href={p.apk} title="Android app (APK)">
+                          APK ↓
+                        </a>
+                      )}
                       <a href={p.url} target="_blank" rel="noopener">
                         Code ↗
                       </a>

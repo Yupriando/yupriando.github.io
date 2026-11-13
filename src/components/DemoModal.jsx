@@ -16,6 +16,7 @@ export default function DemoModal({ project, onClose }) {
   useEffect(() => {
     if (!project) return;
     setLoaded(false);
+    setMobile(!!project.demoMobile); // aplikasi HP langsung tampil dalam bingkai ponsel
     const onKey = (e) => e.key === 'Escape' && onClose();
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -86,12 +87,19 @@ export default function DemoModal({ project, onClose }) {
                 key={project.demo}
                 src={project.demo}
                 title={project.title}
-                allow="camera; microphone; clipboard-write; fullscreen"
+                allow="camera; microphone; autoplay; clipboard-write; fullscreen"
                 onLoad={() => setLoaded(true)}
               />
             </div>
 
             <p className="demo-hint small muted">
+              {project.demoLogin && (
+                <>
+                  Demo account: <span className="mono demo-cred">{project.demoLogin.email}</span> /{' '}
+                  <span className="mono demo-cred">{project.demoLogin.password}</span>
+                  <br />
+                </>
+              )}
               {HINTS[project.demoType] || HINTS.app} If it looks blank,{' '}
               <a href={project.demo} target="_blank" rel="noopener">
                 open it in a new tab ↗
