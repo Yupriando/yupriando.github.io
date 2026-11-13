@@ -297,6 +297,48 @@
   border-radius: 24px;
   box-shadow: 0 0 0 8px #0d0d0d, 0 20px 60px rgba(0, 0, 0, 0.5);
 }
+/* tampilan terbagi: halaman HP (kiri, bingkai ponsel) + layar lebar (kanan) */
+.demo-stage.split {
+  gap: 18px;
+  padding: 30px 18px 16px;
+  background: #06142a;
+}
+.split-pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.split-pane.phone {
+  flex: 0 0 min(360px, 34%);
+}
+.split-pane.wide {
+  flex: 1;
+}
+.split-pane iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
+.split-pane.phone iframe {
+  border-radius: 24px;
+  box-shadow: 0 0 0 7px #0d0d0d, 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.split-pane.wide iframe {
+  border-radius: 10px;
+  box-shadow: 0 0 0 6px #1b2533, 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.split-label {
+  position: absolute;
+  top: -24px;
+  left: 4px;
+  font-size: 0.72rem;
+  color: var(--accent);
+}
+.split-tabs {
+  display: none;
+}
 .demo-loading {
   position: absolute;
   inset: 0;
@@ -348,6 +390,50 @@
   .demo-bar .win-dots,
   .demo-btn.hide-sm {
     display: none;
+  }
+}
+
+/* layar sempit: satu panel penuh, pindah lewat tab (panel lain tetap berjalan di belakang) */
+@media (max-width: 760px) {
+  .demo-stage.split {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+  .split-tabs {
+    display: flex;
+    gap: 6px;
+  }
+  .split-tabs button {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(230, 244, 255, 0.75);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .split-tabs button.on {
+    background: rgba(92, 225, 230, 0.16);
+    color: #fff;
+    border-color: rgba(92, 225, 230, 0.5);
+  }
+  .split-pane {
+    display: none;
+    flex: 1 !important;
+  }
+  .split-pane.on {
+    display: flex;
+  }
+  .split-label {
+    display: none;
+  }
+  .split-pane.phone iframe,
+  .split-pane.wide iframe {
+    border-radius: 12px;
+    box-shadow: none;
   }
 }
 

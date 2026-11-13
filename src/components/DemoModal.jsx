@@ -12,11 +12,14 @@ const HINTS = {
 export default function DemoModal({ project, onClose }) {
   const [loaded, setLoaded] = useState(false);
   const [mobile, setMobile] = useState(false);
+  const [pane, setPane] = useState(0); // tampilan terbagi di layar sempit: panel yang sedang dilihat
+  const split = project?.demoSplit; // dua halaman berdampingan (mis. kamera HP + layar besar)
 
   useEffect(() => {
     if (!project) return;
     setLoaded(false);
     setMobile(!!project.demoMobile); // aplikasi HP langsung tampil dalam bingkai ponsel
+    setPane(0);
     const onKey = (e) => e.key === 'Escape' && onClose();
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -56,14 +59,14 @@ export default function DemoModal({ project, onClose }) {
               </span>
               <span className="demo-url mono">{project.demo.replace(/^https?:\/\//, '')}</span>
               <div className="demo-actions">
-                <button
+                {!split && <button
                   className={`demo-btn hide-sm${mobile ? ' on' : ''}`}
                   onClick={() => setMobile((m) => !m)}
                   title="View mobile version"
                   aria-label="View mobile version"
                 >
                   <Icon name="phone" />
-                </button>
+                </button>}
                 <a className="demo-btn" href={project.demo} target="_blank" rel="noopener" title="Open in a new tab">
                   ↗
                 </a>
@@ -76,21 +79,54 @@ export default function DemoModal({ project, onClose }) {
               </div>
             </div>
 
-            <div className={`demo-stage${mobile ? ' mobile' : ''}`}>
-              {!loaded && (
-                <div className="demo-loading">
-                  <span className="demo-spinner" />
-                  <span className="mono small muted">Diving into {project.title}…</span>
+            {split ? (
+              <div className="demo-stage split">
+                {!loaded && (
+                  <div className="demo-loading">
+                    <span className="demo-spinner" />
+                    <span className="mono small muted">Diving into {project.title}…</span>
+                  </div>
+                )}
+                {/* layar sempit: tab untuk berpindah panel (kedua halaman tetap berjalan) */}
+                <div className="split-tabs" role="tablist">
+                  {[project.demoLabel || 'App', split.label].map((label, i) => (
+                    <button key={label} role="tab" aria-selected={pane === i} className={pane === i ? 'on' : ''} onClick={() => setPane(i)}>
+                      {label}
+                    </button>
+                  ))}
                 </div>
-              )}
-              <iframe
-                key={project.demo}
-                src={project.demo}
-                title={project.title}
-                allow="camera; microphone; autoplay; clipboard-write; fullscreen"
-                onLoad={() => setLoaded(true)}
-              />
-            </div>
+                <div className={`split-pane phone${pane === 0 ? ' on' : ''}`}>
+                  <span className="split-label mono">{project.demoLabel || 'App'}</span>
+                  <iframe
+                    key={project.demo}
+                    src={project.demo}
+                    title={`${project.title}: ${project.demoLabel || 'app'}`}
+                    allow="camera; microphone; autoplay; clipboard-write; fullscreen"
+                    onLoad={() => setLoaded(true)}
+                  />
+                </div>
+                <div className={`split-pane wide${pane === 1 ? ' on' : ''}`}>
+                  <span className="split-label mono">{split.label}</span>
+                  <iframe key={split.url} src={split.url} title={`${project.title}: ${split.label}`} allow="autoplay; fullscreen" />
+                </div>
+              </div>
+            ) : (
+              <div className={`demo-stage${mobile ? ' mobile' : ''}`}>
+                {!loaded && (
+                  <div className="demo-loading">
+                    <span className="demo-spinner" />
+                    <span className="mono small muted">Diving into {project.title}…</span>
+                  </div>
+                )}
+                <iframe
+                  key={project.demo}
+                  src={project.demo}
+                  title={project.title}
+                  allow="camera; microphone; autoplay; clipboard-write; fullscreen"
+                  onLoad={() => setLoaded(true)}
+                />
+              </div>
+            )}
 
             <p className="demo-hint small muted">
               {project.demoLogin && (
@@ -100,7 +136,7 @@ export default function DemoModal({ project, onClose }) {
                   <br />
                 </>
               )}
-              {HINTS[project.demoType] || HINTS.app} If it looks blank,{' '}
+              {project.demoNote ? `${project.demoNote} ` : `${HINTS[project.demoType] || HINTS.app} `}If it looks blank,{' '}
               <a href={project.demo} target="_blank" rel="noopener">
                 open it in a new tab ↗
               </a>

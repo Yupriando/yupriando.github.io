@@ -170,8 +170,12 @@ export const projects = [
     theme: "m2",
     desc: "An event photo wall: guests snap photos with color filters, the shots appear instantly on the big screen as a scrolling ticker, and admins moderate everything from a dashboard.",
     tags: ["HTML", "JavaScript", "Camera"],
-    demo: "https://hapki-snap.vercel.app",
+    // mode demo (?demo=1): foto tidak diunggah ke database acara, hanya tampil di layar demo di browser pengunjung
+    demo: "https://hapki-snap.vercel.app/?demo=1",
     demoType: "app",
+    demoLabel: "📱 Guest phone",
+    demoSplit: { label: "🖥️ Big screen", url: "https://hapki-snap.vercel.app/display.html?demo=1" },
+    demoNote: "Check in, snap a photo and post it: it lands on the big screen on the right. Demo mode, photos stay in your browser.",
   },
   {
     repo: "BulkIn",
