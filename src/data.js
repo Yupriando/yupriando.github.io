@@ -200,6 +200,7 @@ export const projects = [
     demoType: "app",
     demoMobile: true,
     demoLogin: { email: "demo@bulkin.app", password: "bulkin-demo" }, // akun demo bersama, sudah berisi data contoh
+    apk: "https://github.com/Yupriando/BulkIn/raw/main/apk/BulkIn-v1.0.0.apk", // tombol "APK ↓" di kartu
   },
   {
     repo: "Bebaca",
@@ -238,6 +239,7 @@ export const projects = [
     demoType: "app",
     demoMobile: true,
     demoLogin: { email: "demo@savely.app", password: "savely-demo" }, // akun demo bersama, sudah berisi data contoh
+    apk: "https://github.com/Yupriando/Savely/raw/main/release/Savely.apk", // tombol "APK ↓" di kartu
   },
   {
     repo: "WSpeedrun-Microservices",
