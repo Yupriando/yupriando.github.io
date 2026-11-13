@@ -13,6 +13,7 @@ import Icon from './ui/Icon';
 const TRY_LABEL = {
   app: ['play', 'Try It Live'],
   api: ['play', 'Try the API'],
+  docs: ['file', 'View API Docs'], // dokumentasi saja (backend tidak di-hosting)
   design: ['palette', 'View Design'],
 };
 
@@ -28,7 +29,7 @@ export default function Projects() {
   const { list, status } = useGithubProjects();
   const closeDemo = useCallback(() => setDemo(null), []);
 
-  const shown = list.filter((p) => filter === 'all' || (filter === 'live' ? p.demo : p.cat === filter));
+  const shown = list.filter((p) => filter === 'all' || (filter === 'live' ? p.demo && p.demoType !== 'docs' : p.cat === filter));
 
   const openDemo = (p) => {
     if (p.embed === false) window.open(p.demo, '_blank', 'noopener');
@@ -79,7 +80,8 @@ export default function Projects() {
                       <i />
                       <i />
                     </span>
-                    {p.demo && <span className="live-badge mono">● LIVE</span>}
+                    {/* "LIVE" hanya untuk demo yang benar-benar berjalan (bukan dokumentasi statis) */}
+                    {p.demo && p.demoType !== 'docs' && <span className="live-badge mono">● LIVE</span>}
                     {!p.thumb && <span className="emoji">{p.emoji}</span>}
                     <span className="media-label mono">{p.label}</span>
                   </div>

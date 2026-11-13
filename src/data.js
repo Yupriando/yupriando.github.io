@@ -249,6 +249,9 @@ export const projects = [
     theme: "m6",
     desc: "A microservices backend for speedrun submissions, game categories, leaderboards, and authentication, split into Auth, Game, and Run services.",
     tags: ["NestJS", "TypeScript", "Prisma", "JWT", "Microservices"],
+    // Swagger statis di public/demos/wspeedrun (spesifikasi dibuat dari kode NestJS tiap service)
+    demo: "demos/wspeedrun/index.html",
+    demoType: "docs",
   },
   {
     repo: "TKJ-Quiz",
@@ -259,6 +262,7 @@ export const projects = [
     theme: "m1",
     desc: "An educational quiz game for learning Computer & Network Engineering: four levels, multiple choice, scoring, and right/wrong answer feedback.",
     tags: ["Unity", "C#"],
+    apk: "https://github.com/Yupriando/TKJ-Quiz/raw/main/Apk/TKJ%20Quiz.apk", // tombol "APK ↓" di kartu
   },
   {
     repo: "NoiseCore-Website",

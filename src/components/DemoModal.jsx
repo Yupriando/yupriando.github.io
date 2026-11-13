@@ -6,6 +6,7 @@ import Icon from './ui/Icon';
 const HINTS = {
   app: 'This app is running live, go ahead and try it 👆',
   api: 'This is interactive API documentation. Pick an endpoint, then click "Try it out" to test it.',
+  docs: 'API documentation only: pick a service, then open an endpoint to see its request & response.',
 };
 
 // Jendela "Coba Langsung": menampilkan demo proyek di dalam iframe
