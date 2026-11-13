@@ -182,9 +182,10 @@ export const projects = [
         img: "assets/proyek/hapki-snap-event.webp",
         alt: "The real HapkiSnap wall at Hapkido Gathering 2026, guest faces and names blurred",
         caption: "Hapkido Gathering 2026 · 25 Oct 2026 · 127 photos posted by guests (faces & names blurred for privacy)",
+        url: "https://hapki-snap.vercel.app/", // web asli yang dipakai tamu di acara
       },
     },
-    demoNote: "Used for real at Hapkido Gathering 2026 (127 photos, see \"Real event\"). Try it: check in, snap a photo and post it, it lands on the big screen. Demo mode, photos stay in your browser.",
+    demoNote: "Used for real at hapki-snap.vercel.app during Hapkido Gathering 2026 (127 photos, see \"Real event\"). Try it: check in, snap a photo and post it, it lands on the big screen. Demo mode, photos stay in your browser.",
   },
   {
     repo: "BulkIn",

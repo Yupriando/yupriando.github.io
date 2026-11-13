@@ -386,6 +386,10 @@
   color: rgba(230, 244, 255, 0.85);
   background: rgba(4, 16, 32, 0.9);
 }
+.split-real figcaption a {
+  color: var(--accent);
+  white-space: nowrap; /* alamat web tidak terpotong di tengah */
+}
 .demo-loading {
   position: absolute;
   inset: 0;

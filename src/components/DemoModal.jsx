@@ -130,7 +130,17 @@ export default function DemoModal({ project, onClose }) {
                   {split.real && real && (
                     <figure className="split-real">
                       <img src={split.real.img} alt={split.real.alt} />
-                      <figcaption>{split.real.caption}</figcaption>
+                      <figcaption>
+                        {split.real.caption}
+                        {split.real.url && (
+                          <>
+                            {' · '}Real site:{' '}
+                            <a href={split.real.url} target="_blank" rel="noopener">
+                              {split.real.url.replace(/^https?:\/\//, '').replace(/\/$/, '')} ↗
+                            </a>
+                          </>
+                        )}
+                      </figcaption>
                     </figure>
                   )}
                 </div>
