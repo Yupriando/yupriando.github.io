@@ -243,6 +243,7 @@ export const projects = [
   },
   {
     repo: "WSpeedrun-Microservices",
+    thumb: "assets/proyek/wspeedrun.webp", // tampilan Swagger API (16:9)
     title: "WSpeedrun Microservices",
     cat: "backend",
     emoji: "⏱️",
