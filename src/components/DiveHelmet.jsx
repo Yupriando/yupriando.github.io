@@ -193,7 +193,7 @@ export default function DiveHelmet() {
           )}
         </AnimatePresence>
       </button>
-
+      <span className="helmet-hint mono small">{open ? 'tap again to put the helmet on' : 'tap the helmet'}</span>
     </div>
   );
 }
