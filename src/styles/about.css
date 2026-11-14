@@ -223,20 +223,8 @@
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(92, 225, 230, 0.1) 60%);
 }
 
-.helmet-hint {
-  color: var(--muted);
-}
-.helmet-stage:not(.is-open) + .helmet-hint {
-  animation: hint-pulse 2.4s ease-in-out infinite;
-}
-@keyframes hint-pulse {
-  50% {
-    color: var(--accent);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
-  .helmet-stage:not(.is-open):hover .helmet,
-  .helmet-stage + .helmet-hint {
+  .helmet-stage:not(.is-open):hover .helmet {
     animation: none;
   }
 }

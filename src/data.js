@@ -219,6 +219,7 @@ export const projects = [
   },
   {
     repo: "NoteNook",
+    thumb: "assets/proyek/notenook.webp", // tampilan aplikasi (16:9)
     title: "NoteNook",
     cat: "mobile",
     emoji: "🗒️",

@@ -376,8 +376,7 @@ export default function Seafloor() {
           <Icon name="arrow-up" /> Back to the surface
         </motion.button>
         <p className="small muted">
-          © {new Date().getFullYear()} {profile.name} · built with React, Framer Motion &amp; 🐟 ·{' '}
-          <span className="mono">git commit -m "keep swimming"</span>
+          © {new Date().getFullYear()} {profile.name}
         </p>
       </div>
     </footer>

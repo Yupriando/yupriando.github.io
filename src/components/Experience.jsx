@@ -14,7 +14,7 @@ export default function Experience() {
   return (
     <section className="zone" id="experience">
       <div className="container">
-        <SectionHead idx="04" zone="abyssopelagic_zone · 6,000 m" note="pitch black, your cursor is now a flashlight 🔦" title="Experience" />
+        <SectionHead idx="04" zone="abyssopelagic_zone · 6,000 m" note="pitch black, your cursor is now a flashlight" title="Experience" />
 
         <ol className="timeline" ref={listRef}>
           <span className="tl-track" aria-hidden="true" />

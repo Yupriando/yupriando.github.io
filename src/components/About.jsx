@@ -91,7 +91,7 @@ export default function About() {
                       </span>
                     ))}
                     {'};\n'}
-                    <span className="c">// psst… try grabbing a fish in the background 🐟</span>
+                    <span className="c">// psst… try grabbing a fish in the background</span>
                   </code>
                 </pre>
               </div>
